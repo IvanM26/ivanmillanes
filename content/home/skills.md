@@ -15,21 +15,38 @@ subtitle = ""
 # For available icons, see: https://sourcethemes.com/academic/docs/page-builder/#icons
 
 [[feature]]
+  icon = "users"
+  icon_pack = "fas"
+  name = "Teamwork"
+  description = ""
+
+[[feature]]
   icon = "r-project"
   icon_pack = "fab"
-  name = "R"
-  description = "90%"
-  
+  name = "R Programming"
+  description = ""
+
+[[feature]]
+  icon = "robot"
+  icon_pack = "fas"
+  name = "Automation"
+  description = ""
+
+[[feature]]
+  icon = "brain"
+  icon_pack = "fas"
+  name = "Critical Thinking"
+  description = ""
+
 [[feature]]
   icon = "chart-line"
   icon_pack = "fas"
   name = "Statistics"
-  description = "100%"  
-  
-[[feature]]
-  icon = "camera-retro"
-  icon_pack = "fas"
-  name = "Photography"
-  description = "10%"
+  description = ""
 
+[[feature]]
+  icon = "chart-area"
+  icon_pack = "fas"
+  name = "Data Visualization"
+  description = ""
 +++
