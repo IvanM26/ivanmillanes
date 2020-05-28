@@ -1,5 +1,5 @@
 ---
-title: Web Scrapping IMDB with R
+title: Web Scrapping IMDb with R
 author: Ivan Millanes
 date: '2020-05-27'
 slug: web-scrapping-imdb-with-r
@@ -11,7 +11,7 @@ tags:
   - rvest
   - parallel
 subtitle: ''
-summary: ''
+summary: 'This is summary'
 authors: []
 lastmod: '2020-05-27T09:16:31-03:00'
 featured: no
@@ -25,7 +25,413 @@ bibliography: bibliography.bib
 
 # Introduction
 
-[IMDb (Internet Movie Database)](https://www.imdb.com/) is an online database of information related to films, television programs, home videos, video games, and streaming content online – including cast, production crew and personal biographies, plot summaries, trivia, ratings, and fan and critical reviews. [@wiki:imdb]
+[IMDb (Internet Movie Database)](https://www.imdb.com/) is an online database of information related to films, television programs, home videos, video games, and streaming content online – including cast, production crew and personal biographies, plot summaries, trivia, ratings, and fan and critical reviews [@wiki:imdb].
+
+# Datasets
+
+Subsets of IMDb data are available for access to customers for personal and non-commercial use [HERE](https://datasets.imdbws.com/). Documentation for these data files can be found [HERE](https://www.imdb.com/interfaces/).
+
+- `title.basics.tsv.gz`, which contains the following information for titles:
+
+    - `tconst` (string): alphanumeric unique identifier of the title  
+    - `titleType` (string): the type/format of the title (e.g. movie, short, tvseries, tvepisode, video, etc)  
+    - `primaryTitle` (string): the more popular title / the title used by the filmmakers on promotional materials at the point of release  
+    - `originalTitle` (string): original title, in the original language  
+    - `isAdult` (boolean):
+        - `0`: non-adult title;
+        - `1`: adult title  
+    - `startYear` (YYYY): represents the release year of a title. In the case of TV Series, it is the series start year  
+    - `endYear` (YYYY): TV Series end year. ‘\\N’ for all other title types  
+    - `runtimeMinutes`: primary runtime of the title, in minutes  
+    - `genres` (string array): includes up to three genres associated with the title  
+
+- `title.ratings.tsv.gz`, which contains the IMDb rating and votes information for titles:
+
+    - `tconst` (string): alphanumeric unique identifier of the title
+    - `averageRating`: weighted average of all the individual user ratings
+    - `numVotes` - number of votes the title has received
+
+- `title.crew.tsv.gz`, which contains the director and writer information for all the titles in IMDb. Fields include:
+
+    - `tconst` (string): alphanumeric unique identifier of the title
+    - `directors` (array of nconsts): director(s) of the given title
+    - `writers` (array of nconsts): writer(s) of the given title. This column won't be used.
+
+- `name.basics.tsv.gz`, which contains the following information for names:
+
+    - `nconst` (string) - alphanumeric unique identifier of the name/person
+    - `primaryName` (string): name by which the person is most often credited
+    - `birthYear`: in YYYY format
+    - `deathYear`: in YYYY format if applicable, else '\\N'
+    - `primaryProfession` (array of strings): the top-3 professions of the person
+    - `knownForTitles` (array of tconsts): titles the person is known for
+
+# Load Packages
+
+The following packages need to be installed and loaded in order to run the code written in this post.
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(parallel)
+library(rvest)
+library(knitr)
+```
+
+# Download Data
+
+To inspect the datasets, I need to download them. I'll place the downloaded files in a folder named `data`. The following code creates that folder if it doesn't already exist and then proceeds with the download of each file. 
+
+For the purpose of this post, I'll proceed with the download only if the file does not exist. You should take into account that the downloaded files may change depending on when they are downloaded (as new information is available every day).
+
+```{r}
+# Create "data" folder if does not exist
+if (!file.exists("data")) {
+  dir.create("data")
+}
+
+# Download the files from IMDb if they haven't been downloaded
+if (!file.exists("data/title.basics.tsv.gz")) {
+download.file("https://datasets.imdbws.com/title.basics.tsv.gz",
+              destfile = "data/title.basics.tsv.gz")
+}
+
+if (!file.exists("data/title.ratings.tsv.gz")) {
+download.file("https://datasets.imdbws.com/title.ratings.tsv.gz",
+              destfile = "data/title.ratings.tsv.gz")
+}
+
+if (!file.exists("data/title.crew.tsv.gz")) {
+download.file("https://datasets.imdbws.com/title.crew.tsv.gz",
+              destfile = "data/title.crew.tsv.gz")
+}
+
+if (!file.exists("data/name.basics.tsv.gz")) {
+download.file("https://datasets.imdbws.com/name.basics.tsv.gz",
+              destfile = "data/name.basics.tsv.gz")
+}
+```
+
+# Load Data
+
+The downloaded files have the extension `.tsv.gz`.
+
+```{r load-data, cache=TRUE}
+# Load title.basics
+title.basics <- gzfile("data/title.basics.tsv.gz") %>%
+      read_delim(
+            "\t", 
+            escape_double = FALSE, 
+            na = "\\N", 
+            trim_ws = TRUE, 
+            quote='',
+            col_types = cols(
+                  tconst = col_character(), 
+                  titleType = col_character(),
+                  primaryTitle = col_character(),
+                  originalTitle = col_character(),
+                  isAdult = col_logical(),
+                  startYear = col_integer(),
+                  endYear = col_integer(),                 
+                  runtimeMinutes = col_integer(), 
+                  genres = col_character()
+                  )
+            )
+
+# Load title.ratings
+title.ratings <- gzfile("data/title.ratings.tsv.gz") %>%
+      read_delim("\t", 
+                 escape_double = FALSE, 
+                 na = "\\N", 
+                 trim_ws = TRUE, 
+                 quote='',
+                 col_types = cols(
+                       tconst = col_character(), 
+                       averageRating = col_double(),
+                       numVotes = col_integer()
+                       )
+                 )
+
+# Load title.crew, skipping writers column
+title.crew <- gzfile("data/title.crew.tsv.gz") %>%
+      read_delim("\t", 
+              escape_double = FALSE, 
+              na = "\\N", 
+              trim_ws = TRUE, 
+              quote='',
+              col_types = cols(
+                 tconst = col_character(),
+                 directors = col_character(),
+                 writers = col_skip()
+                 )
+              )
+
+# Load name.basics
+name.basics <- gzfile("data/name.basics.tsv.gz") %>%
+      read_delim("\t", 
+              escape_double = FALSE, 
+              na = "\\N", 
+              trim_ws = TRUE, 
+              quote='',
+              col_types = cols(
+                 nconst = col_character(),
+                 primaryName = col_character(),
+                 birthYear = col_skip(),
+                 deathYear = col_skip(),
+                 primaryProfession = col_skip(),
+                 knownForTitles = col_skip()
+                 )
+              )
+```
+
+# Inspect Data
+
+Let's check that each dataset contains the information mentioned in the documentation.
+
+```{r}
+# Function to create a kable table with a dataset head()
+kable_head <- function(x, n = 6) {
+  x %>%
+    head(n) %>%
+    kable
+}
+```
 
 
+```{r head-data, cache=TRUE}
+kable_head(title.basics)
+kable_head(title.ratings)
+kable_head(title.crew, 8)
+kable_head(name.basics)
+```
+
+
+# Movies Dataset
+
+Let's start the creation of our **movies** dataset. It will consist of titles classified as `movie` in the `title.basics` dataset, but not all movies will be part of it. 
+
+Our dataset will consist of movies that:
+
+- have a release year (`startYear`) greater than or equal to 1970
+- have a runtime (`runtimeMinutes`) between 45m and 3h30min (210 min)
+- have an average rating (`averageRating`) greater than or equal to 4 on IMDb
+- at least 2500 votes (`numVotes`) on IMDb
+
+If you want to change any of the parameters I defined, you can do it!
+
+The following code uses the `title.basics` and `title.ratings` dataset to create our `movies` dataset. It also creates a new column named `linkTitle` which can be used to create a link to the movie's IMDb website.
+
+For some reason, some titles where duplicated in the downloaded dataset. In the code I also remove these duplicates.
+
+```{r movies-1}
+# Creation of the movies dataset
+movies <- title.basics %>%
+  
+  # Apply filters
+      filter(
+            titleType == "movie",
+            startYear >= 1970,
+            runtimeMinutes >= 45 & runtimeMinutes <= 210
+            ) %>%
+  
+  # Add ratings and votes
+  left_join(title.ratings, by = "tconst") %>%
+  
+  # Remove duplicates
+      distinct(tconst, .keep_all = TRUE) %>%
+  
+  # Apply filters
+      filter(
+            averageRating >= 4,
+            numVotes >= 2500
+      ) %>%
+  # Create linkTitle
+   mutate(
+     linkTitle = str_c(
+       "<a href='https://www.imdb.com/title/", tconst, "/'>", originalTitle,"</a>")
+     )
+```
+
+```{r}
+kable_head(movies)
+```
+
+I'll use the `title.crew` dataset to add directors. There are a few consideration to be made about this dataset:
+
+- Names are coded, and the meaning of the codes are in the `name.basics` data set
+- Some titles have more than one director, separated by a comma
+
+This means that some preprocessing needs to be applied in order to replace the codes with the actual names, which is what I want to add to the movies dataset. 
+
+Also, before doing this preprocessing I kept only information related to titles in the movies dataset, to speed up the code.
+
+```{r crew-preproc}
+title.crew <- title.crew %>%
+  
+  # Keep crew from titles in movies
+   semi_join(movies, "tconst") %>%
+  
+  # One row for each director
+   separate_rows(directors, sep = ",") %>%
+  
+  # Add name
+   left_join(name.basics, by = c("directors" = "nconst")) %>%
+  
+  # Return to semicolon separated values
+   group_by(tconst) %>%
+   summarise(directors = str_c(primaryName, collapse = ";")) %>%
+   ungroup()
+```
+
+Let's see how `title.crew` looks like now.
+
+```{r}
+kable_head(title.crew)
+```
+
+Now we can left join this table to `movies`.
+
+```{r}
+# Add the column to movies
+movies <- movies %>%
+   left_join(title.crew, by = "tconst")
+```
+
+Let's take a look at our dataset so far...
+
+```{r}
+kable_head(movies)
+```
+
+So far so good, but I'd like to add more data to each movie. This is when web scrapping joins the party.
+
+We are going to use the `rvest` package to extract the following additional information about each movie (when available):
+
+- Metascore. More info about this rating [HERE](https://www.imdb.com/list/ls051211184/)
+- The place or places where the production companies for that title are based, and therefore where the financing originated (Country)
+- Estimated production cost of the movie (Budget)
+- How much the movie took at the box office in the USA in its first weekend of release (Opening Weekend USA)
+- How much the movie made at the box office in USA (Gross USA)
+- How much the movie made at the box office all over the world, including the USA (Worldwide Gross)
+- Did the movie won any Oscars? If so, how many? If not, was is nominated for at least one oscar? If so, how many? Obs: The variables mean exactly what I described here. This has to do with the way I scrapped this data. This means that if a movie won one Oscar, we don't know how many nominations it had.
+- Full cast
+
+We have lots of movies for which we want to extract data. This will take some time. To speed up the process, I'll also use the `parallel` package. For each movie, we have to look information in two different websites (in one we have all information related to the movie, and in the other we have the full cast). The code below uses all but one of my computer's cores to run an apply in parallel. Our output, named `scrapping` consists of a list of elements with length equal to the number of movies to be scrapped, and each element of this list is a list of elements (let's say, each of this list is one of the variables extracted). Then I'll work on this element to add the information to the movies dataset. 
+
+There are some things to take into account when scrapping the box office information. Here, based on how the information is structure on IMDb, I extract a vector whose length may vary from movie to movie (in fact, is a character vector with one element for each type of information). In this first step I extract more information than I want, but later I'll manage to keep only the information that I want and assign it to the proper vector. This might be a little be confusing now, but I hope that by inspecting the code, if interested, you'll get what is doing!
+
+On the other side, if you don't care about the details, you can use the code anyway and see if the final output works for you!
+
+```{r scrapping, eval=FALSE}
+# Web scrapping more information about movies
+
+# Set the cluster to work in parallel
+n_cores <- detectCores() - 1
+clust <- makeCluster(n_cores)
+
+# Load packages on each cluster
+clusterEvalQ(clust, {
+  library(dplyr)
+  library(stringr)
+  library(rvest)
+})
+
+# Create scrapping object by running a parallel apply
+scrapping <- parLapply(clust, movies$tconst, function(x){
+  
+  # Read title page
+  title_page <- read_html(str_c("https://www.imdb.com/title/", x)) 
+  
+  # Scrap metascore
+  scrap_metascore <- title_page %>%
+    html_nodes(".metacriticScore span") %>%
+    html_text
+  
+  # Scrap box office (and country)
+  scrap_boxOffice <- title_page %>%
+    html_nodes(".txt-block") %>%
+    html_text
+  
+  # Scrap awards
+  scrap_awards <- title_page %>%
+    html_nodes(".awards-blurb b") %>%
+    html_text
+  
+  
+  # Read cast page
+  cast_page <- read_html(str_c("https://www.imdb.com/title/", x, "/fullcredits?ref_=tt_cl_sm#cast"))
+  
+  # Scrap cast
+  scrap_cast <- cast_page %>%
+    html_nodes(".primary_photo+ td a") %>%
+    html_text %>%
+    str_c(collapse = ";") %>%
+    str_replace_all("\\n", "")
+  
+  # Output for each movie
+  my_list <- list("scrap_cast" = scrap_cast,
+                  "scrap_metascore" = scrap_metascore,
+                  "scrap_boxOffice" = scrap_boxOffice,
+                  "scrap_awards" = scrap_awards)
+  return(my_list)
+})
+
+# Stop the cluster
+stopCluster(clust)
+```
+
+
+```{r, eval=FALSE}
+n_movies <- nrow(movies)
+
+# Preallocate vectors
+scrap_cast <- vector("character", length = n_movies)
+
+scrap_metascore <- vector("character", length = n_movies)
+
+scrap_country <- vector("character", length = n_movies)
+scrap_budget <- vector("character", length = n_movies)
+scrap_open_usa <- vector("character", length = n_movies)
+scrap_gross_usa <- vector("character", length = n_movies)
+scrap_gross_world <- vector("character", length = n_movies)
+
+scrap_awards <- vector("character", length = n_movies)
+
+# Function to fix length zero problem
+no_lenght_zero <- function(x){
+  ifelse(identical(x, character(0)), NA_character_, x)
+}
+
+# Assign extracted info
+for (i in seq_along(scrapping)){
+  
+  scrap_cast[[i]] <- no_lenght_zero(scrapping[[i]][["scrap_cast"]])
+  
+  scrap_metascore[[i]] <- no_lenght_zero(scrapping[[i]][["scrap_metascore"]])
+  
+  boxOffice_list <- scrapping[[i]][["scrap_boxOffice"]]
+  
+  scrap_country[[i]] <- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, "Country:")))
+  scrap_budget[[i]] <- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, "Budget:")))
+  scrap_open_usa[[i]] <- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, "Opening Weekend USA:")))
+  scrap_gross_usa[[i]] <- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, "Gross USA:")))
+  scrap_gross_world[[i]] <- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, "Cumulative Worldwide Gross:")))
+
+  scrap_awards[[i]] <- no_lenght_zero(scrapping[[i]][["scrap_awards"]])
+}
+
+```
+
+
+```{r, eval=FALSE}
+# Add columns to data
+movies <- movies %>%
+  mutate(cast = scrap_cast,
+         metascore_raw = scrap_metascore,
+         country_raw = scrap_country,
+         budget_raw = scrap_budget,
+         open_usa_raw = scrap_open_usa,
+         gross_usa_raw = scrap_gross_usa,
+         gross_world_raw = scrap_gross_world,
+         awards_raw = scrap_awards)
+```
 

@@ -1,5 +1,5 @@
 ---
-title: Web Scrapping IMDB with R
+title: Web Scrapping IMDb with R
 author: Ivan Millanes
 date: '2020-05-27'
 slug: web-scrapping-imdb-with-r
@@ -11,7 +11,7 @@ tags:
   - rvest
   - parallel
 subtitle: ''
-summary: ''
+summary: 'This is summary'
 authors: []
 lastmod: '2020-05-27T09:16:31-03:00'
 featured: no
@@ -27,7 +27,816 @@ bibliography: bibliography.bib
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p><a href="https://www.imdb.com/">IMDb (Internet Movie Database)</a> is an online database of information related to films, television programs, home videos, video games, and streaming content online – including cast, production crew and personal biographies, plot summaries, trivia, ratings, and fan and critical reviews. <span class="citation">(Wikipedia contributors 2020)</span></p>
+<p><a href="https://www.imdb.com/">IMDb (Internet Movie Database)</a> is an online database of information related to films, television programs, home videos, video games, and streaming content online – including cast, production crew and personal biographies, plot summaries, trivia, ratings, and fan and critical reviews <span class="citation">(Wikipedia contributors 2020)</span>.</p>
+</div>
+<div id="datasets" class="section level1">
+<h1>Datasets</h1>
+<p>Subsets of IMDb data are available for access to customers for personal and non-commercial use <a href="https://datasets.imdbws.com/">HERE</a>. Documentation for these data files can be found <a href="https://www.imdb.com/interfaces/">HERE</a>.</p>
+<ul>
+<li><p><code>title.basics.tsv.gz</code>, which contains the following information for titles:</p>
+<ul>
+<li><code>tconst</code> (string): alphanumeric unique identifier of the title<br />
+</li>
+<li><code>titleType</code> (string): the type/format of the title (e.g. movie, short, tvseries, tvepisode, video, etc)<br />
+</li>
+<li><code>primaryTitle</code> (string): the more popular title / the title used by the filmmakers on promotional materials at the point of release<br />
+</li>
+<li><code>originalTitle</code> (string): original title, in the original language<br />
+</li>
+<li><code>isAdult</code> (boolean):
+<ul>
+<li><code>0</code>: non-adult title;</li>
+<li><code>1</code>: adult title<br />
+</li>
+</ul></li>
+<li><code>startYear</code> (YYYY): represents the release year of a title. In the case of TV Series, it is the series start year<br />
+</li>
+<li><code>endYear</code> (YYYY): TV Series end year. ‘\N’ for all other title types<br />
+</li>
+<li><code>runtimeMinutes</code>: primary runtime of the title, in minutes<br />
+</li>
+<li><code>genres</code> (string array): includes up to three genres associated with the title</li>
+</ul></li>
+<li><p><code>title.ratings.tsv.gz</code>, which contains the IMDb rating and votes information for titles:</p>
+<ul>
+<li><code>tconst</code> (string): alphanumeric unique identifier of the title</li>
+<li><code>averageRating</code>: weighted average of all the individual user ratings</li>
+<li><code>numVotes</code> - number of votes the title has received</li>
+</ul></li>
+<li><p><code>title.crew.tsv.gz</code>, which contains the director and writer information for all the titles in IMDb. Fields include:</p>
+<ul>
+<li><code>tconst</code> (string): alphanumeric unique identifier of the title</li>
+<li><code>directors</code> (array of nconsts): director(s) of the given title</li>
+<li><code>writers</code> (array of nconsts): writer(s) of the given title. This column won’t be used.</li>
+</ul></li>
+<li><p><code>name.basics.tsv.gz</code>, which contains the following information for names:</p>
+<ul>
+<li><code>nconst</code> (string) - alphanumeric unique identifier of the name/person</li>
+<li><code>primaryName</code> (string): name by which the person is most often credited</li>
+<li><code>birthYear</code>: in YYYY format</li>
+<li><code>deathYear</code>: in YYYY format if applicable, else ‘\N’</li>
+<li><code>primaryProfession</code> (array of strings): the top-3 professions of the person</li>
+<li><code>knownForTitles</code> (array of tconsts): titles the person is known for</li>
+</ul></li>
+</ul>
+</div>
+<div id="load-packages" class="section level1">
+<h1>Load Packages</h1>
+<p>The following packages need to be installed and loaded in order to run the code written in this post.</p>
+<pre class="r"><code>library(tidyverse)
+library(parallel)
+library(rvest)
+library(knitr)</code></pre>
+</div>
+<div id="download-data" class="section level1">
+<h1>Download Data</h1>
+<p>To inspect the datasets, I need to download them. I’ll place the downloaded files in a folder named <code>data</code>. The following code creates that folder if it doesn’t already exist and then proceeds with the download of each file.</p>
+<p>For the purpose of this post, I’ll proceed with the download only if the file does not exist. You should take into account that the downloaded files may change depending on when they are downloaded (as new information is available every day).</p>
+<pre class="r"><code># Create &quot;data&quot; folder if does not exist
+if (!file.exists(&quot;data&quot;)) {
+  dir.create(&quot;data&quot;)
+}
+
+# Download the files from IMDb if they haven&#39;t been downloaded
+if (!file.exists(&quot;data/title.basics.tsv.gz&quot;)) {
+download.file(&quot;https://datasets.imdbws.com/title.basics.tsv.gz&quot;,
+              destfile = &quot;data/title.basics.tsv.gz&quot;)
+}
+
+if (!file.exists(&quot;data/title.ratings.tsv.gz&quot;)) {
+download.file(&quot;https://datasets.imdbws.com/title.ratings.tsv.gz&quot;,
+              destfile = &quot;data/title.ratings.tsv.gz&quot;)
+}
+
+if (!file.exists(&quot;data/title.crew.tsv.gz&quot;)) {
+download.file(&quot;https://datasets.imdbws.com/title.crew.tsv.gz&quot;,
+              destfile = &quot;data/title.crew.tsv.gz&quot;)
+}
+
+if (!file.exists(&quot;data/name.basics.tsv.gz&quot;)) {
+download.file(&quot;https://datasets.imdbws.com/name.basics.tsv.gz&quot;,
+              destfile = &quot;data/name.basics.tsv.gz&quot;)
+}</code></pre>
+</div>
+<div id="load-data" class="section level1">
+<h1>Load Data</h1>
+<p>The downloaded files have the extension <code>.tsv.gz</code>.</p>
+<pre class="r"><code># Load title.basics
+title.basics &lt;- gzfile(&quot;data/title.basics.tsv.gz&quot;) %&gt;%
+      read_delim(
+            &quot;\t&quot;, 
+            escape_double = FALSE, 
+            na = &quot;\\N&quot;, 
+            trim_ws = TRUE, 
+            quote=&#39;&#39;,
+            col_types = cols(
+                  tconst = col_character(), 
+                  titleType = col_character(),
+                  primaryTitle = col_character(),
+                  originalTitle = col_character(),
+                  isAdult = col_logical(),
+                  startYear = col_integer(),
+                  endYear = col_integer(),                 
+                  runtimeMinutes = col_integer(), 
+                  genres = col_character()
+                  )
+            )
+
+# Load title.ratings
+title.ratings &lt;- gzfile(&quot;data/title.ratings.tsv.gz&quot;) %&gt;%
+      read_delim(&quot;\t&quot;, 
+                 escape_double = FALSE, 
+                 na = &quot;\\N&quot;, 
+                 trim_ws = TRUE, 
+                 quote=&#39;&#39;,
+                 col_types = cols(
+                       tconst = col_character(), 
+                       averageRating = col_double(),
+                       numVotes = col_integer()
+                       )
+                 )
+
+# Load title.crew, skipping writers column
+title.crew &lt;- gzfile(&quot;data/title.crew.tsv.gz&quot;) %&gt;%
+      read_delim(&quot;\t&quot;, 
+              escape_double = FALSE, 
+              na = &quot;\\N&quot;, 
+              trim_ws = TRUE, 
+              quote=&#39;&#39;,
+              col_types = cols(
+                 tconst = col_character(),
+                 directors = col_character(),
+                 writers = col_skip()
+                 )
+              )
+
+# Load name.basics
+name.basics &lt;- gzfile(&quot;data/name.basics.tsv.gz&quot;) %&gt;%
+      read_delim(&quot;\t&quot;, 
+              escape_double = FALSE, 
+              na = &quot;\\N&quot;, 
+              trim_ws = TRUE, 
+              quote=&#39;&#39;,
+              col_types = cols(
+                 nconst = col_character(),
+                 primaryName = col_character(),
+                 birthYear = col_skip(),
+                 deathYear = col_skip(),
+                 primaryProfession = col_skip(),
+                 knownForTitles = col_skip()
+                 )
+              )</code></pre>
+</div>
+<div id="inspect-data" class="section level1">
+<h1>Inspect Data</h1>
+<p>Let’s check that each dataset contains the information mentioned in the documentation.</p>
+<pre class="r"><code># Function to create a kable table with a dataset head()
+kable_head &lt;- function(x, n = 6) {
+  x %&gt;%
+    head(n) %&gt;%
+    kable
+}</code></pre>
+<pre class="r"><code>kable_head(title.basics)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">tconst</th>
+<th align="left">titleType</th>
+<th align="left">primaryTitle</th>
+<th align="left">originalTitle</th>
+<th align="left">isAdult</th>
+<th align="right">startYear</th>
+<th align="right">endYear</th>
+<th align="right">runtimeMinutes</th>
+<th align="left">genres</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">tt0000001</td>
+<td align="left">short</td>
+<td align="left">Carmencita</td>
+<td align="left">Carmencita</td>
+<td align="left">FALSE</td>
+<td align="right">1894</td>
+<td align="right">NA</td>
+<td align="right">1</td>
+<td align="left">Documentary,Short</td>
+</tr>
+<tr class="even">
+<td align="left">tt0000002</td>
+<td align="left">short</td>
+<td align="left">Le clown et ses chiens</td>
+<td align="left">Le clown et ses chiens</td>
+<td align="left">FALSE</td>
+<td align="right">1892</td>
+<td align="right">NA</td>
+<td align="right">5</td>
+<td align="left">Animation,Short</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0000003</td>
+<td align="left">short</td>
+<td align="left">Pauvre Pierrot</td>
+<td align="left">Pauvre Pierrot</td>
+<td align="left">FALSE</td>
+<td align="right">1892</td>
+<td align="right">NA</td>
+<td align="right">4</td>
+<td align="left">Animation,Comedy,Romance</td>
+</tr>
+<tr class="even">
+<td align="left">tt0000004</td>
+<td align="left">short</td>
+<td align="left">Un bon bock</td>
+<td align="left">Un bon bock</td>
+<td align="left">FALSE</td>
+<td align="right">1892</td>
+<td align="right">NA</td>
+<td align="right">12</td>
+<td align="left">Animation,Short</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0000005</td>
+<td align="left">short</td>
+<td align="left">Blacksmith Scene</td>
+<td align="left">Blacksmith Scene</td>
+<td align="left">FALSE</td>
+<td align="right">1893</td>
+<td align="right">NA</td>
+<td align="right">1</td>
+<td align="left">Comedy,Short</td>
+</tr>
+<tr class="even">
+<td align="left">tt0000006</td>
+<td align="left">short</td>
+<td align="left">Chinese Opium Den</td>
+<td align="left">Chinese Opium Den</td>
+<td align="left">FALSE</td>
+<td align="right">1894</td>
+<td align="right">NA</td>
+<td align="right">1</td>
+<td align="left">Short</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable_head(title.ratings)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">tconst</th>
+<th align="right">averageRating</th>
+<th align="right">numVotes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">tt0000001</td>
+<td align="right">5.6</td>
+<td align="right">1618</td>
+</tr>
+<tr class="even">
+<td align="left">tt0000002</td>
+<td align="right">6.0</td>
+<td align="right">198</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0000003</td>
+<td align="right">6.5</td>
+<td align="right">1298</td>
+</tr>
+<tr class="even">
+<td align="left">tt0000004</td>
+<td align="right">6.1</td>
+<td align="right">122</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0000005</td>
+<td align="right">6.1</td>
+<td align="right">2077</td>
+</tr>
+<tr class="even">
+<td align="left">tt0000006</td>
+<td align="right">5.1</td>
+<td align="right">112</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable_head(title.crew, 8)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">tconst</th>
+<th align="left">directors</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">tt0000001</td>
+<td align="left">nm0005690</td>
+</tr>
+<tr class="even">
+<td align="left">tt0000002</td>
+<td align="left">nm0721526</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0000003</td>
+<td align="left">nm0721526</td>
+</tr>
+<tr class="even">
+<td align="left">tt0000004</td>
+<td align="left">nm0721526</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0000005</td>
+<td align="left">nm0005690</td>
+</tr>
+<tr class="even">
+<td align="left">tt0000006</td>
+<td align="left">nm0005690</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0000007</td>
+<td align="left">nm0374658,nm0005690</td>
+</tr>
+<tr class="even">
+<td align="left">tt0000008</td>
+<td align="left">nm0005690</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable_head(name.basics)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">nconst</th>
+<th align="left">primaryName</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">nm0000001</td>
+<td align="left">Fred Astaire</td>
+</tr>
+<tr class="even">
+<td align="left">nm0000002</td>
+<td align="left">Lauren Bacall</td>
+</tr>
+<tr class="odd">
+<td align="left">nm0000003</td>
+<td align="left">Brigitte Bardot</td>
+</tr>
+<tr class="even">
+<td align="left">nm0000004</td>
+<td align="left">John Belushi</td>
+</tr>
+<tr class="odd">
+<td align="left">nm0000005</td>
+<td align="left">Ingmar Bergman</td>
+</tr>
+<tr class="even">
+<td align="left">nm0000006</td>
+<td align="left">Ingrid Bergman</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="movies-dataset" class="section level1">
+<h1>Movies Dataset</h1>
+<p>Let’s start the creation of our <strong>movies</strong> dataset. It will consist of titles classified as <code>movie</code> in the <code>title.basics</code> dataset, but not all movies will be part of it.</p>
+<p>Our dataset will consist of movies that:</p>
+<ul>
+<li>have a release year (<code>startYear</code>) greater than or equal to 1970</li>
+<li>have a runtime (<code>runtimeMinutes</code>) between 45m and 3h30min (210 min)</li>
+<li>have an average rating (<code>averageRating</code>) greater than or equal to 4 on IMDb</li>
+<li>at least 2500 votes (<code>numVotes</code>) on IMDb</li>
+</ul>
+<p>If you want to change any of the parameters I defined, you can do it!</p>
+<p>The following code uses the <code>title.basics</code> and <code>title.ratings</code> dataset to create our <code>movies</code> dataset. It also creates a new column named <code>linkTitle</code> which can be used to create a link to the movie’s IMDb website.</p>
+<p>For some reason, some titles where duplicated in the downloaded dataset. In the code I also remove these duplicates.</p>
+<pre class="r"><code># Creation of the movies dataset
+movies &lt;- title.basics %&gt;%
+  
+  # Apply filters
+      filter(
+            titleType == &quot;movie&quot;,
+            startYear &gt;= 1970,
+            runtimeMinutes &gt;= 45 &amp; runtimeMinutes &lt;= 210
+            ) %&gt;%
+  
+  # Add ratings and votes
+  left_join(title.ratings, by = &quot;tconst&quot;) %&gt;%
+  
+  # Remove duplicates
+      distinct(tconst, .keep_all = TRUE) %&gt;%
+  
+  # Apply filters
+      filter(
+            averageRating &gt;= 4,
+            numVotes &gt;= 2500
+      ) %&gt;%
+  # Create linkTitle
+   mutate(
+     linkTitle = str_c(
+       &quot;&lt;a href=&#39;https://www.imdb.com/title/&quot;, tconst, &quot;/&#39;&gt;&quot;, originalTitle,&quot;&lt;/a&gt;&quot;)
+     )</code></pre>
+<pre class="r"><code>kable_head(movies)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">tconst</th>
+<th align="left">titleType</th>
+<th align="left">primaryTitle</th>
+<th align="left">originalTitle</th>
+<th align="left">isAdult</th>
+<th align="right">startYear</th>
+<th align="right">endYear</th>
+<th align="right">runtimeMinutes</th>
+<th align="left">genres</th>
+<th align="right">averageRating</th>
+<th align="right">numVotes</th>
+<th align="left">linkTitle</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">tt0035423</td>
+<td align="left">movie</td>
+<td align="left">Kate &amp; Leopold</td>
+<td align="left">Kate &amp; Leopold</td>
+<td align="left">FALSE</td>
+<td align="right">2001</td>
+<td align="right">NA</td>
+<td align="right">118</td>
+<td align="left">Comedy,Fantasy,Romance</td>
+<td align="right">6.4</td>
+<td align="right">77127</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0035423/'>Kate &amp; Leopold</a></td>
+</tr>
+<tr class="even">
+<td align="left">tt0064106</td>
+<td align="left">movie</td>
+<td align="left">Le Boucher</td>
+<td align="left">Le boucher</td>
+<td align="left">FALSE</td>
+<td align="right">1970</td>
+<td align="right">NA</td>
+<td align="right">93</td>
+<td align="left">Drama,Thriller</td>
+<td align="right">7.5</td>
+<td align="right">7348</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0064106/'>Le boucher</a></td>
+</tr>
+<tr class="odd">
+<td align="left">tt0064165</td>
+<td align="left">movie</td>
+<td align="left">The Things of Life</td>
+<td align="left">Les choses de la vie</td>
+<td align="left">FALSE</td>
+<td align="right">1970</td>
+<td align="right">NA</td>
+<td align="right">89</td>
+<td align="left">Drama,Romance</td>
+<td align="right">7.6</td>
+<td align="right">3664</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0064165/'>Les choses de la vie</a></td>
+</tr>
+<tr class="even">
+<td align="left">tt0064177</td>
+<td align="left">movie</td>
+<td align="left">Colossus: The Forbin Project</td>
+<td align="left">Colossus: The Forbin Project</td>
+<td align="left">FALSE</td>
+<td align="right">1970</td>
+<td align="right">NA</td>
+<td align="right">100</td>
+<td align="left">Sci-Fi,Thriller</td>
+<td align="right">7.1</td>
+<td align="right">7860</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0064177/'>Colossus: The Forbin Project</a></td>
+</tr>
+<tr class="odd">
+<td align="left">tt0064285</td>
+<td align="left">movie</td>
+<td align="left">The Wild Child</td>
+<td align="left">L’enfant sauvage</td>
+<td align="left">FALSE</td>
+<td align="right">1970</td>
+<td align="right">NA</td>
+<td align="right">83</td>
+<td align="left">Drama</td>
+<td align="right">7.5</td>
+<td align="right">7238</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0064285/'>L’enfant sauvage</a></td>
+</tr>
+<tr class="even">
+<td align="left">tt0064437</td>
+<td align="left">movie</td>
+<td align="left">The Honeymoon Killers</td>
+<td align="left">The Honeymoon Killers</td>
+<td align="left">FALSE</td>
+<td align="right">1970</td>
+<td align="right">NA</td>
+<td align="right">107</td>
+<td align="left">Crime,Drama,Romance</td>
+<td align="right">7.0</td>
+<td align="right">4229</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0064437/'>The Honeymoon Killers</a></td>
+</tr>
+</tbody>
+</table>
+<p>I’ll use the <code>title.crew</code> dataset to add directors. There are a few consideration to be made about this dataset:</p>
+<ul>
+<li>Names are coded, and the meaning of the codes are in the <code>name.basics</code> data set</li>
+<li>Some titles have more than one director, separated by a comma</li>
+</ul>
+<p>This means that some preprocessing needs to be applied in order to replace the codes with the actual names, which is what I want to add to the movies dataset.</p>
+<p>Also, before doing this preprocessing I kept only information related to titles in the movies dataset, to speed up the code.</p>
+<pre class="r"><code>title.crew &lt;- title.crew %&gt;%
+  
+  # Keep crew from titles in movies
+   semi_join(movies, &quot;tconst&quot;) %&gt;%
+  
+  # One row for each director
+   separate_rows(directors, sep = &quot;,&quot;) %&gt;%
+  
+  # Add name
+   left_join(name.basics, by = c(&quot;directors&quot; = &quot;nconst&quot;)) %&gt;%
+  
+  # Return to semicolon separated values
+   group_by(tconst) %&gt;%
+   summarise(directors = str_c(primaryName, collapse = &quot;;&quot;)) %&gt;%
+   ungroup()</code></pre>
+<p>Let’s see how <code>title.crew</code> looks like now.</p>
+<pre class="r"><code>kable_head(title.crew)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">tconst</th>
+<th align="left">directors</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">tt0035423</td>
+<td align="left">James Mangold</td>
+</tr>
+<tr class="even">
+<td align="left">tt0064106</td>
+<td align="left">Claude Chabrol</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0064165</td>
+<td align="left">Claude Sautet</td>
+</tr>
+<tr class="even">
+<td align="left">tt0064177</td>
+<td align="left">Joseph Sargent</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0064285</td>
+<td align="left">François Truffaut</td>
+</tr>
+<tr class="even">
+<td align="left">tt0064437</td>
+<td align="left">Donald Volkman;Leonard Kastle</td>
+</tr>
+</tbody>
+</table>
+<p>Now we can left join this table to <code>movies</code>.</p>
+<pre class="r"><code># Add the column to movies
+movies &lt;- movies %&gt;%
+   left_join(title.crew, by = &quot;tconst&quot;)</code></pre>
+<p>Let’s take a look at our dataset so far…</p>
+<pre class="r"><code>kable_head(movies)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">tconst</th>
+<th align="left">titleType</th>
+<th align="left">primaryTitle</th>
+<th align="left">originalTitle</th>
+<th align="left">isAdult</th>
+<th align="right">startYear</th>
+<th align="right">endYear</th>
+<th align="right">runtimeMinutes</th>
+<th align="left">genres</th>
+<th align="right">averageRating</th>
+<th align="right">numVotes</th>
+<th align="left">linkTitle</th>
+<th align="left">directors</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">tt0035423</td>
+<td align="left">movie</td>
+<td align="left">Kate &amp; Leopold</td>
+<td align="left">Kate &amp; Leopold</td>
+<td align="left">FALSE</td>
+<td align="right">2001</td>
+<td align="right">NA</td>
+<td align="right">118</td>
+<td align="left">Comedy,Fantasy,Romance</td>
+<td align="right">6.4</td>
+<td align="right">77127</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0035423/'>Kate &amp; Leopold</a></td>
+<td align="left">James Mangold</td>
+</tr>
+<tr class="even">
+<td align="left">tt0064106</td>
+<td align="left">movie</td>
+<td align="left">Le Boucher</td>
+<td align="left">Le boucher</td>
+<td align="left">FALSE</td>
+<td align="right">1970</td>
+<td align="right">NA</td>
+<td align="right">93</td>
+<td align="left">Drama,Thriller</td>
+<td align="right">7.5</td>
+<td align="right">7348</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0064106/'>Le boucher</a></td>
+<td align="left">Claude Chabrol</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0064165</td>
+<td align="left">movie</td>
+<td align="left">The Things of Life</td>
+<td align="left">Les choses de la vie</td>
+<td align="left">FALSE</td>
+<td align="right">1970</td>
+<td align="right">NA</td>
+<td align="right">89</td>
+<td align="left">Drama,Romance</td>
+<td align="right">7.6</td>
+<td align="right">3664</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0064165/'>Les choses de la vie</a></td>
+<td align="left">Claude Sautet</td>
+</tr>
+<tr class="even">
+<td align="left">tt0064177</td>
+<td align="left">movie</td>
+<td align="left">Colossus: The Forbin Project</td>
+<td align="left">Colossus: The Forbin Project</td>
+<td align="left">FALSE</td>
+<td align="right">1970</td>
+<td align="right">NA</td>
+<td align="right">100</td>
+<td align="left">Sci-Fi,Thriller</td>
+<td align="right">7.1</td>
+<td align="right">7860</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0064177/'>Colossus: The Forbin Project</a></td>
+<td align="left">Joseph Sargent</td>
+</tr>
+<tr class="odd">
+<td align="left">tt0064285</td>
+<td align="left">movie</td>
+<td align="left">The Wild Child</td>
+<td align="left">L’enfant sauvage</td>
+<td align="left">FALSE</td>
+<td align="right">1970</td>
+<td align="right">NA</td>
+<td align="right">83</td>
+<td align="left">Drama</td>
+<td align="right">7.5</td>
+<td align="right">7238</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0064285/'>L’enfant sauvage</a></td>
+<td align="left">François Truffaut</td>
+</tr>
+<tr class="even">
+<td align="left">tt0064437</td>
+<td align="left">movie</td>
+<td align="left">The Honeymoon Killers</td>
+<td align="left">The Honeymoon Killers</td>
+<td align="left">FALSE</td>
+<td align="right">1970</td>
+<td align="right">NA</td>
+<td align="right">107</td>
+<td align="left">Crime,Drama,Romance</td>
+<td align="right">7.0</td>
+<td align="right">4229</td>
+<td align="left"><a href='https://www.imdb.com/title/tt0064437/'>The Honeymoon Killers</a></td>
+<td align="left">Donald Volkman;Leonard Kastle</td>
+</tr>
+</tbody>
+</table>
+<p>So far so good, but I’d like to add more data to each movie. This is when web scrapping joins the party.</p>
+<p>We are going to use the <code>rvest</code> package to extract the following additional information about each movie (when available):</p>
+<ul>
+<li>Metascore. More info about this rating <a href="https://www.imdb.com/list/ls051211184/">HERE</a></li>
+<li>The place or places where the production companies for that title are based, and therefore where the financing originated (Country)</li>
+<li>Estimated production cost of the movie (Budget)</li>
+<li>How much the movie took at the box office in the USA in its first weekend of release (Opening Weekend USA)</li>
+<li>How much the movie made at the box office in USA (Gross USA)</li>
+<li>How much the movie made at the box office all over the world, including the USA (Worldwide Gross)</li>
+<li>Did the movie won any Oscars? If so, how many? If not, was is nominated for at least one oscar? If so, how many? Obs: The variables mean exactly what I described here. This has to do with the way I scrapped this data. This means that if a movie won one Oscar, we don’t know how many nominations it had.</li>
+<li>Full cast</li>
+</ul>
+<p>We have lots of movies for which we want to extract data. This will take some time. To speed up the process, I’ll also use the <code>parallel</code> package. For each movie, we have to look information in two different websites (in one we have all information related to the movie, and in the other we have the full cast). The code below uses all but one of my computer’s cores to run an apply in parallel. Our output, named <code>scrapping</code> consists of a list of elements with length equal to the number of movies to be scrapped, and each element of this list is a list of elements (let’s say, each of this list is one of the variables extracted). Then I’ll work on this element to add the information to the movies dataset.</p>
+<p>There are some things to take into account when scrapping the box office information. Here, based on how the information is structure on IMDb, I extract a vector whose length may vary from movie to movie (in fact, is a character vector with one element for each type of information). In this first step I extract more information than I want, but later I’ll manage to keep only the information that I want and assign it to the proper vector. This might be a little be confusing now, but I hope that by inspecting the code, if interested, you’ll get what is doing!</p>
+<p>On the other side, if you don’t care about the details, you can use the code anyway and see if the final output works for you!</p>
+<pre class="r"><code># Web scrapping more information about movies
+
+# Set the cluster to work in parallel
+n_cores &lt;- detectCores() - 1
+clust &lt;- makeCluster(n_cores)
+
+# Load packages on each cluster
+clusterEvalQ(clust, {
+  library(dplyr)
+  library(stringr)
+  library(rvest)
+})
+
+# Create scrapping object by running a parallel apply
+scrapping &lt;- parLapply(clust, movies$tconst, function(x){
+  
+  # Read title page
+  title_page &lt;- read_html(str_c(&quot;https://www.imdb.com/title/&quot;, x)) 
+  
+  # Scrap metascore
+  scrap_metascore &lt;- title_page %&gt;%
+    html_nodes(&quot;.metacriticScore span&quot;) %&gt;%
+    html_text
+  
+  # Scrap box office (and country)
+  scrap_boxOffice &lt;- title_page %&gt;%
+    html_nodes(&quot;.txt-block&quot;) %&gt;%
+    html_text
+  
+  # Scrap awards
+  scrap_awards &lt;- title_page %&gt;%
+    html_nodes(&quot;.awards-blurb b&quot;) %&gt;%
+    html_text
+  
+  
+  # Read cast page
+  cast_page &lt;- read_html(str_c(&quot;https://www.imdb.com/title/&quot;, x, &quot;/fullcredits?ref_=tt_cl_sm#cast&quot;))
+  
+  # Scrap cast
+  scrap_cast &lt;- cast_page %&gt;%
+    html_nodes(&quot;.primary_photo+ td a&quot;) %&gt;%
+    html_text %&gt;%
+    str_c(collapse = &quot;;&quot;) %&gt;%
+    str_replace_all(&quot;\\n&quot;, &quot;&quot;)
+  
+  # Output for each movie
+  my_list &lt;- list(&quot;scrap_cast&quot; = scrap_cast,
+                  &quot;scrap_metascore&quot; = scrap_metascore,
+                  &quot;scrap_boxOffice&quot; = scrap_boxOffice,
+                  &quot;scrap_awards&quot; = scrap_awards)
+  return(my_list)
+})
+
+# Stop the cluster
+stopCluster(clust)</code></pre>
+<pre class="r"><code>n_movies &lt;- nrow(movies)
+
+# Preallocate vectors
+scrap_cast &lt;- vector(&quot;character&quot;, length = n_movies)
+
+scrap_metascore &lt;- vector(&quot;character&quot;, length = n_movies)
+
+scrap_country &lt;- vector(&quot;character&quot;, length = n_movies)
+scrap_budget &lt;- vector(&quot;character&quot;, length = n_movies)
+scrap_open_usa &lt;- vector(&quot;character&quot;, length = n_movies)
+scrap_gross_usa &lt;- vector(&quot;character&quot;, length = n_movies)
+scrap_gross_world &lt;- vector(&quot;character&quot;, length = n_movies)
+
+scrap_awards &lt;- vector(&quot;character&quot;, length = n_movies)
+
+# Function to fix length zero problem
+no_lenght_zero &lt;- function(x){
+  ifelse(identical(x, character(0)), NA_character_, x)
+}
+
+# Assign extracted info
+for (i in seq_along(scrapping)){
+  
+  scrap_cast[[i]] &lt;- no_lenght_zero(scrapping[[i]][[&quot;scrap_cast&quot;]])
+  
+  scrap_metascore[[i]] &lt;- no_lenght_zero(scrapping[[i]][[&quot;scrap_metascore&quot;]])
+  
+  boxOffice_list &lt;- scrapping[[i]][[&quot;scrap_boxOffice&quot;]]
+  
+  scrap_country[[i]] &lt;- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, &quot;Country:&quot;)))
+  scrap_budget[[i]] &lt;- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, &quot;Budget:&quot;)))
+  scrap_open_usa[[i]] &lt;- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, &quot;Opening Weekend USA:&quot;)))
+  scrap_gross_usa[[i]] &lt;- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, &quot;Gross USA:&quot;)))
+  scrap_gross_world[[i]] &lt;- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, &quot;Cumulative Worldwide Gross:&quot;)))
+
+  scrap_awards[[i]] &lt;- no_lenght_zero(scrapping[[i]][[&quot;scrap_awards&quot;]])
+}</code></pre>
+<pre class="r"><code># Add columns to data
+movies &lt;- movies %&gt;%
+  mutate(cast = scrap_cast,
+         metascore_raw = scrap_metascore,
+         country_raw = scrap_country,
+         budget_raw = scrap_budget,
+         open_usa_raw = scrap_open_usa,
+         gross_usa_raw = scrap_gross_usa,
+         gross_world_raw = scrap_gross_world,
+         awards_raw = scrap_awards)</code></pre>
 <div id="refs" class="references">
 <div id="ref-wiki:imdb">
 <p>Wikipedia contributors. 2020. “IMDb — Wikipedia, the Free Encyclopedia.” <a href="https://en.wikipedia.org/w/index.php?title=IMDb&amp;oldid=959154715">https://en.wikipedia.org/w/index.php?title=IMDb&amp;oldid=959154715</a>.</p>
