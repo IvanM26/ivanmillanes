@@ -11,7 +11,7 @@ tags:
   - rvest
   - parallel
 subtitle: ''
-summary: "In this post, I'll show how I used R to create a movies dataset. I worked with IMDb (Internet Movie Database) data files available for download and information gathered through web scrapping their site."
+summary: "In this post, I'll show how I used R to create a movies dataset. I worked with IMDb (Internet Movie Database) data files available for download and information gathered through web scraping their site."
 authors: []
 lastmod: '2020-05-27T09:16:31-03:00'
 featured: no
@@ -27,6 +27,18 @@ bibliography: bibliography.bib
 
 
 <p>In this post, I’ll show how I used R to create a movies dataset. I worked with <a href="https://www.imdb.com/">IMDb (Internet Movie Database)</a> data files <a href="https://datasets.imdbws.com/">available for download</a> and information gathered through web scrapping their site.</p>
+<div id="before-we-start" class="section level1">
+<h1>Before we start…</h1>
+<p>English is not my first language, and after writing this post someone told me that what I did was scra<strong>p</strong>ing, not scra<strong>pp</strong>ing. And that you scra<strong>pe</strong> something, not scra<strong>p</strong>. More info <a href="https://stackoverflow.com/questions/42842324/scraping-vs-scrapping-is-there-a-difference">here</a>.</p>
+<p>Since some code chunks take a lot of time to run (specially the ones where I <strong>scrape</strong>), I had them cached, but changing objects names would mean run everything again and waste a lot of time, so I decided to write this in the beggining of the post.</p>
+<p>This means that:</p>
+<ul>
+<li>when I say scrapping, I mean scraping</li>
+<li>when I say scrapped, I mean scraped</li>
+<li>when I say scrap, I mean scrape</li>
+</ul>
+<p>Hope you enjoy the post!</p>
+</div>
 <div id="load-packages" class="section level1">
 <h1>Load Packages</h1>
 <p>The following packages need to be installed and loaded in order to run the code written in this post.</p>
@@ -50,10 +62,9 @@ library(kableExtra)</code></pre>
 <li><code>name.basics.tsv.gz</code></li>
 </ul>
 <p>I’ll provide more information about them in the following sections.</p>
-<details>
-<summary>Code Details</summary>
-The following code creates a folder named <code>data</code> if it doesn’t already exist where I’ll place the downloaded files. For the purpose of this post, the download of each file will proceed if the file hasn’t been downloaded yet. You should take into account that the downloaded files may change depending on when they are downloaded (as new information is available every day).
-</details>
+<div id="details" class="section level3">
+<h3>Details</h3>
+<p>The following code creates a folder named <code>data</code> if it doesn’t already exist where I’ll place the downloaded files. For the purpose of this post, the download of each file will proceed if the file hasn’t been downloaded yet. You should take into account that the downloaded files may change depending on when they are downloaded (as new information is available every day).</p>
 <pre class="r"><code># Create &quot;data&quot; folder if does not exist
 if (!file.exists(&quot;data&quot;)) {
   dir.create(&quot;data&quot;)
@@ -79,6 +90,7 @@ if (!file.exists(&quot;data/name.basics.tsv.gz&quot;)) {
 download.file(&quot;https://datasets.imdbws.com/name.basics.tsv.gz&quot;,
               destfile = &quot;data/name.basics.tsv.gz&quot;)
 }</code></pre>
+</div>
 </div>
 <div id="description-load-and-inspection" class="section level2">
 <h2>Description, Load and Inspection</h2>
@@ -684,9 +696,9 @@ Ingrid Bergman
 <li>at least 2500 votes (<code>numVotes</code>) on IMDb</li>
 </ul>
 <p>The following code takes <code>title.basics</code>, applies some filters, adds <code>title.ratings</code> information, applies some filters again and finally, creates a new column, <code>linkTitle</code>, which contains the html code necessary to link a movie to its IMDb website.</p>
-<details>
-<p><summary>Code Details</summary>
-This is what the code does:</p>
+<div id="details-1" class="section level3">
+<h3>Details</h3>
+<p>This is what the code does:</p>
 <ul>
 <li>Begin with <code>title.basics</code> dataset.</li>
 <li>Filter titles with:
@@ -704,8 +716,7 @@ This is what the code does:</p>
 </ul></li>
 <li>Create <code>linkTitle</code> column.</li>
 </ul>
-If you want to change any of the parameters I defined in the filters, you can do it!
-</details>
+<p>If you want to change any of the parameters I defined in the filters, you can do it!</p>
 <pre class="r"><code># Creation of the movies dataset
 movies &lt;- title.basics %&gt;%
   
@@ -1023,9 +1034,10 @@ Crime,Drama,Romance
 <p>To finish Part I, I’ll add <code>directors</code> information to our <code>movies</code> dataset.</p>
 <p>This would have been pretty straightforward if <code>title.crew</code> had directors’ names instead of codes. As that’s not the case, some preprocessing is going to be necessary. Also, the fact that when a title has more than one director they are comma-separated in the same cell adds certain complexity to the task of replacing codes with names. But be not afraid, because the <code>tidyverse</code> is going to help us with this task!</p>
 <p>The following code applies the desired change to <code>title.crew</code>.</p>
-<details>
-<p><summary>Code Details</summary>
-This is what the code does:</p>
+</div>
+<div id="details-2" class="section level3">
+<h3>Details</h3>
+<p>This is what the code does:</p>
 <ul>
 <li>Begin with <code>title.crew</code> dataset.</li>
 <li>Keep crew that corresponds to titles in <code>movies</code> to speed up calculations</li>
@@ -1033,7 +1045,6 @@ This is what the code does:</p>
 <li>Add the name by directors’ code.</li>
 <li>Return to a dataset with one row per title and comma-separated named directors.</li>
 </ul>
-</details>
 <pre class="r"><code>title.crew &lt;- title.crew %&gt;%
   
   # Keep crew from titles in movies
@@ -1447,6 +1458,7 @@ Donald Volkman;Leonard Kastle
 </tbody>
 </table>
 </div>
+</div>
 <div id="movies-dataset---part-ii" class="section level1">
 <h1>Movies Dataset - Part II</h1>
 <p>So far so good. We used the downloaded files to create a <code>movies</code> dataset with a lot of information about movies with certain characteristics. But what if we want even <strong>more</strong> information?</p>
@@ -1465,17 +1477,16 @@ Donald Volkman;Leonard Kastle
 </ul>
 <p>How can we add that information to our dataset? Now is when <em>web scrapping</em> joins the party. I’ll use the <code>rvest</code> package to extract the information mentioned above for each movie (when available). Also, as we have to do this for 16191 movies, I’ll be using the <code>parallel</code> package to speed up the work. Even with this approach, the code took around one hour and a half to run.</p>
 <p>The following code creates an object named <code>scrapping</code> that contains the information we want for each movie. Some preprocessing is going to be necessary before adding new columns to <code>movies</code>, but I’ll talk about it later.</p>
-<details>
-<p><summary>Code Details</summary>
-I had to retrieve information for a lot of movies, and look for it in two different websites (because full cast data wasn’t in the same title page as the other information). For that reason, I decided to run my code in <code>parallel</code>.</p>
+<div id="details-3" class="section level3">
+<h3>Details</h3>
+<p>I had to retrieve information for a lot of movies, and look for it in two different websites (because full cast data wasn’t in the same title page as the other information). For that reason, I decided to run my code in <code>parallel</code>.</p>
 <p>The first part of the code sets up clusters to run the work in parallel. I defined the number of cores to be used equal to the number of cores in my computer (it has eight cores) minus one, because that’s what is recommended. So I created seven clusters. Remember to stop the clusters when you finish the work.</p>
 <p>I load the necessary libraries to run the code in each cluster by using the <code>clusterEvalQ</code> function. I assigned the result of that function to <code>junk</code> to prevent the print of some output.</p>
 <p>Then we have the extraction function itself. The difference is that instead of using <code>apply</code>, we use <code>parLapply</code>.</p>
 <p>The object <code>scrapping</code> consists of a list of elements with length equal to the number of movies scrapped, and each element of this list is a list of elements (the returned <code>my_list</code> object for each movie).</p>
 <p>The scrapping part is somewhat straightforward. We read the html, we select nodes and extract the text.</p>
 <p>There is one final consideration regarding the scrapping of box office information. Based on how the information is structured on IMDb, in this step I extracted more data than necessary. For each movie, the <code>scrap_boxOffice</code> object is a character vector whose length may vary from movie to movie (because not all movies have all data available) and each element of that vector contains different data. I’ll manage to keep the information I want and assign it to the corresponding vector in the next section.</p>
-Even though I tried to be as clear as possible, this might be a little confusing, but I hope that by inspecting the code you’ll get what is doing!
-</details>
+<p>Even though I tried to be as clear as possible, this might be a little confusing, but I hope that by inspecting the code you’ll get what is doing!</p>
 <pre class="r"><code># Web scrapping more information about movies
 
 # Set the cluster to work in parallel
@@ -1538,19 +1549,19 @@ scrapping &lt;- parLapply(clust, movies$tconst, function(x){
 # Stop the cluster
 stopCluster(clust)</code></pre>
 </div>
+</div>
 <div id="vector-assignment" class="section level2">
 <h2>Vector Assignment</h2>
 <p>The following code uses the <code>scrapping</code> object to create the vectors of data that will be used to add columns to <code>movies</code>.</p>
-<details>
-<p><summary>Code Details</summary>
-This is what the code does:</p>
+<div id="details-4" class="section level3">
+<h3>Details</h3>
+<p>This is what the code does:</p>
 <ul>
 <li>Preallocates the corresponding vectors</li>
 <li>Creates <code>no_lenght_zero</code> function to solve an issue realted to how data is scrapped when there is no information</li>
 <li>Fills preallocated vectors</li>
 </ul>
-<code>boxOffice_list</code> is a character vector where each element refers to a different type of data. It is somewhat structured though, so I used a combination of <code>keep</code> and <code>str_detect</code> functions to assign each target data to the corresponding vector.
-</details>
+<p><code>boxOffice_list</code> is a character vector where each element refers to a different type of data. It is somewhat structured though, so I used a combination of <code>keep</code> and <code>str_detect</code> functions to assign each target data to the corresponding vector.</p>
 <pre class="r"><code># Number of movies
 n_movies &lt;- nrow(movies)
 
@@ -1602,6 +1613,7 @@ for (i in seq_along(scrapping)){
   scrap_awards[[i]] &lt;- scrapping[[i]][[&quot;scrap_awards&quot;]] %&gt;%
     no_lenght_zero
 }</code></pre>
+</div>
 </div>
 <div id="add-columns" class="section level2">
 <h2>Add columns</h2>

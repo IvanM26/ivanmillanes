@@ -11,7 +11,7 @@ tags:
   - rvest
   - parallel
 subtitle: ''
-summary: "In this post, I'll show how I used R to create a movies dataset. I worked with IMDb (Internet Movie Database) data files available for download and information gathered through web scrapping their site."
+summary: "In this post, I'll show how I used R to create a movies dataset. I worked with IMDb (Internet Movie Database) data files available for download and information gathered through web scraping their site."
 authors: []
 lastmod: '2020-05-27T09:16:31-03:00'
 featured: no
@@ -24,6 +24,20 @@ bibliography: bibliography.bib
 ---
 
 In this post, I'll show how I used R to create a movies dataset. I worked with [IMDb (Internet Movie Database)](https://www.imdb.com/) data files [available for download](https://datasets.imdbws.com/) and information gathered through web scrapping their site.
+
+# Before we start...
+
+English is not my first language, and after writing this post someone told me that what I did was scra**p**ing, not scra**pp**ing. And that you scra**pe** something, not scra**p**. More info [here](https://stackoverflow.com/questions/42842324/scraping-vs-scrapping-is-there-a-difference).
+
+Since some code chunks take a lot of time to run (specially the ones where I **scrape**), I had them cached, but changing objects names would mean run everything again and waste a lot of time, so I decided to write this in the beggining of the post.
+
+This means that:
+
+- when I say scrapping, I mean scraping
+- when I say scrapped, I mean scraped
+- when I say scrap, I mean scrape
+
+Hope you enjoy the post!
 
 # Load Packages
 
@@ -54,9 +68,9 @@ I'll download the following datasets:
 
 I'll provide more information about them in the following sections.
 
-<details><summary>Code Details</summary>
+### Details
+
 The following code creates a folder named `data` if it doesn't already exist where I'll place the downloaded files. For the purpose of this post, the download of each file will proceed if the file hasn't been downloaded yet. You should take into account that the downloaded files may change depending on when they are downloaded (as new information is available every day).
-</details>
 
 ```{r}
 # Create "data" folder if does not exist
@@ -293,7 +307,8 @@ In Part I, I'll work with the datasets downloaded in the previous section to cre
 
 The following code takes `title.basics`, applies some filters, adds `title.ratings` information, applies some filters again and finally, creates a new column, `linkTitle`, which contains the html code necessary to link a movie to its IMDb website.
 
-<details><summary>Code Details</summary>
+### Details
+
 This is what the code does:
 
 - Begin with `title.basics` dataset. 
@@ -309,7 +324,6 @@ This is what the code does:
 - Create `linkTitle` column.
 
 If you want to change any of the parameters I defined in the filters, you can do it!
-</details>
 
 ```{r movies-1}
 # Creation of the movies dataset
@@ -366,7 +380,8 @@ This would have been pretty straightforward if `title.crew` had directors' names
 
 The following code applies the desired change to `title.crew`.
 
-<details><summary>Code Details</summary>
+### Details
+
 This is what the code does:
 
 - Begin with `title.crew` dataset. 
@@ -374,7 +389,6 @@ This is what the code does:
 - Go from a dataset where we have one row per title with comma-separated directors codes, to a dataset where we have one row per director code, indicating the title they directed. This step creates a longer dataset which will have duplicate `tconst` values for titles with more than one director.
 - Add the name by directors' code.
 - Return to a dataset with one row per title and comma-separated named directors.
-</details>
 
 ```{r crew-preproc}
 title.crew <- title.crew %>%
@@ -453,7 +467,7 @@ How can we add that information to our dataset? Now is when *web scrapping* join
 
 The following code creates an object named `scrapping` that contains the information we want for each movie. Some preprocessing is going to be necessary before adding new columns to `movies`, but I'll talk about it later.
 
-<details><summary>Code Details</summary>
+### Details
 I had to retrieve information for a lot of movies, and look for it in two different websites (because full cast data wasn't in the same title page as the other information). For that reason, I decided to run my code in `parallel`.
 
 The first part of the code sets up clusters to run the work in parallel. I defined the number of cores to be used equal to the number of cores in my computer (it has eight cores) minus one, because that's what is recommended. So I created seven clusters. Remember to stop the clusters when you finish the work.
@@ -469,7 +483,6 @@ The scrapping part is somewhat straightforward. We read the html, we select node
 There is one final consideration regarding the scrapping of box office information. Based on how the information is structured on IMDb, in this step I extracted more data than necessary. For each movie, the `scrap_boxOffice` object is a character vector whose length may vary from movie to movie (because not all movies have all data available) and each element of that vector contains different data. I'll manage to keep the information I want and assign it to the corresponding vector in the next section.
 
 Even though I tried to be as clear as possible, this might be a little confusing, but I hope that by inspecting the code you'll get what is doing!
-</details>
 
 ```{r scrapping, cache=TRUE}
 # Web scrapping more information about movies
@@ -539,7 +552,8 @@ stopCluster(clust)
 
 The following code uses the `scrapping` object to create the vectors of data that will be used to add columns to `movies`.
 
-<details><summary>Code Details</summary>
+### Details
+
 This is what the code does:
 
 - Preallocates the corresponding vectors
@@ -547,7 +561,6 @@ This is what the code does:
 - Fills preallocated vectors
 
 `boxOffice_list` is a character vector where each element refers to a different type of data. It is somewhat structured though, so I used a combination of `keep` and `str_detect` functions to assign each target data to the corresponding vector.
-</details>
 
 ```{r scrapping-vectors, cache=TRUE}
 # Number of movies
