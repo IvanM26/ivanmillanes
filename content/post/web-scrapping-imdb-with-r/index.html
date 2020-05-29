@@ -1,8 +1,8 @@
 ---
-title: Web Scrapping IMDb with R
+title: Creating a Movie Dataset with R
 author: Ivan Millanes
 date: '2020-05-27'
-slug: web-scrapping-imdb-with-r
+slug: movie-dataset-with-r
 categories: []
 tags:
   - R
@@ -26,61 +26,7 @@ bibliography: bibliography.bib
 <script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
 
 
-<div id="introduction" class="section level1">
-<h1>Introduction</h1>
-<p><a href="https://www.imdb.com/">IMDb (Internet Movie Database)</a> is an online database of information related to films, television programs, home videos, video games, and streaming content online – including cast, production crew and personal biographies, plot summaries, trivia, ratings, and fan and critical reviews <span class="citation">(Wikipedia contributors 2020)</span>.</p>
-</div>
-<div id="datasets" class="section level1">
-<h1>Datasets</h1>
-<p>Subsets of IMDb data are available for access to customers for personal and non-commercial use <a href="https://datasets.imdbws.com/">HERE</a>. Documentation for these data files can be found <a href="https://www.imdb.com/interfaces/">HERE</a>.</p>
-<ul>
-<li><p><code>title.basics.tsv.gz</code>, which contains the following information for titles:</p>
-<ul>
-<li><code>tconst</code> (string): alphanumeric unique identifier of the title<br />
-</li>
-<li><code>titleType</code> (string): the type/format of the title (e.g. movie, short, tvseries, tvepisode, video, etc)<br />
-</li>
-<li><code>primaryTitle</code> (string): the more popular title / the title used by the filmmakers on promotional materials at the point of release<br />
-</li>
-<li><code>originalTitle</code> (string): original title, in the original language<br />
-</li>
-<li><code>isAdult</code> (boolean):
-<ul>
-<li><code>0</code>: non-adult title;</li>
-<li><code>1</code>: adult title<br />
-</li>
-</ul></li>
-<li><code>startYear</code> (YYYY): represents the release year of a title. In the case of TV Series, it is the series start year<br />
-</li>
-<li><code>endYear</code> (YYYY): TV Series end year. ‘\N’ for all other title types<br />
-</li>
-<li><code>runtimeMinutes</code>: primary runtime of the title, in minutes<br />
-</li>
-<li><code>genres</code> (string array): includes up to three genres associated with the title</li>
-</ul></li>
-<li><p><code>title.ratings.tsv.gz</code>, which contains the IMDb rating and votes information for titles:</p>
-<ul>
-<li><code>tconst</code> (string): alphanumeric unique identifier of the title</li>
-<li><code>averageRating</code>: weighted average of all the individual user ratings</li>
-<li><code>numVotes</code> - number of votes the title has received</li>
-</ul></li>
-<li><p><code>title.crew.tsv.gz</code>, which contains the director and writer information for all the titles in IMDb. Fields include:</p>
-<ul>
-<li><code>tconst</code> (string): alphanumeric unique identifier of the title</li>
-<li><code>directors</code> (array of nconsts): director(s) of the given title</li>
-<li><code>writers</code> (array of nconsts): writer(s) of the given title. This column won’t be used.</li>
-</ul></li>
-<li><p><code>name.basics.tsv.gz</code>, which contains the following information for names:</p>
-<ul>
-<li><code>nconst</code> (string) - alphanumeric unique identifier of the name/person</li>
-<li><code>primaryName</code> (string): name by which the person is most often credited</li>
-<li><code>birthYear</code>: in YYYY format</li>
-<li><code>deathYear</code>: in YYYY format if applicable, else ‘\N’</li>
-<li><code>primaryProfession</code> (array of strings): the top-3 professions of the person</li>
-<li><code>knownForTitles</code> (array of tconsts): titles the person is known for</li>
-</ul></li>
-</ul>
-</div>
+<p>In this post, I’ll show how I used R to create a movies dataset. I worked with <a href="https://www.imdb.com/">IMDb (Internet Movie Database)</a> data files <a href="https://datasets.imdbws.com/">available for download</a> and information gathered through web scrapping their site.</p>
 <div id="load-packages" class="section level1">
 <h1>Load Packages</h1>
 <p>The following packages need to be installed and loaded in order to run the code written in this post.</p>
@@ -90,10 +36,24 @@ library(rvest)
 library(knitr)
 library(kableExtra)</code></pre>
 </div>
-<div id="download-data" class="section level1">
-<h1>Download Data</h1>
-<p>To inspect the datasets, I need to download them. I’ll place the downloaded files in a folder named <code>data</code>. The following code creates that folder if it doesn’t already exist and then proceeds with the download of each file.</p>
-<p>For the purpose of this post, I’ll proceed with the download only if the file does not exist. You should take into account that the downloaded files may change depending on when they are downloaded (as new information is available every day).</p>
+<div id="imdb-datasets" class="section level1">
+<h1>IMDb Datasets</h1>
+<p><a href="https://www.imdb.com/">IMDb (Internet Movie Database)</a> is an online database of information related to films, television programs, home videos, video games, and streaming content online – including cast, production crew and personal biographies, plot summaries, trivia, ratings, and fan and critical reviews <span class="citation">(Wikipedia contributors 2020)</span>.</p>
+<p>Subsets of IMDb data are <a href="https://datasets.imdbws.com/">available</a> for access to customers for personal and non-commercial use.</p>
+<div id="download" class="section level2">
+<h2>Download</h2>
+<p>I’ll download the following datasets:</p>
+<ul>
+<li><code>title.basics.tsv.gz</code></li>
+<li><code>title.ratings.tsv.gz</code></li>
+<li><code>title.crew.tsv.gz</code></li>
+<li><code>name.basics.tsv.gz</code></li>
+</ul>
+<p>I’ll provide more information about them in the following sections.</p>
+<details>
+<summary>Code Details</summary>
+The following code creates a folder named <code>data</code> if it doesn’t already exist where I’ll place the downloaded files. For the purpose of this post, the download of each file will proceed if the file hasn’t been downloaded yet. You should take into account that the downloaded files may change depending on when they are downloaded (as new information is available every day).
+</details>
 <pre class="r"><code># Create &quot;data&quot; folder if does not exist
 if (!file.exists(&quot;data&quot;)) {
   dir.create(&quot;data&quot;)
@@ -120,9 +80,35 @@ download.file(&quot;https://datasets.imdbws.com/name.basics.tsv.gz&quot;,
               destfile = &quot;data/name.basics.tsv.gz&quot;)
 }</code></pre>
 </div>
-<div id="load-data" class="section level1">
-<h1>Load Data</h1>
-<p>The downloaded files have the extension <code>.tsv.gz</code>.</p>
+<div id="description-load-and-inspection" class="section level2">
+<h2>Description, Load and Inspection</h2>
+<p>In this section I’ll describe what variables are included in each dataset, load them into R and take a look at their first few rows.</p>
+<p>I created the following function to set the column width of a variable.</p>
+<pre class="r"><code># Function to set kable column width
+col_width &lt;- function(kable_input, data, col, width_min) {
+  column_spec(kable_input = kable_input, 
+              column = which( colnames(data) == enexpr(col) ), 
+              width_min = width_min)
+}</code></pre>
+<div id="title.basics.tsv.gz" class="section level3">
+<h3><code>title.basics.tsv.gz</code></h3>
+<p>This dataset contains the following information:</p>
+<ul>
+<li><code>tconst</code> (string): alphanumeric unique identifier of the title</li>
+<li><code>titleType</code> (string): the type/format of the title (e.g. movie, short, tvseries, tvepisode, video, etc)</li>
+<li><code>primaryTitle</code> (string): the more popular title / the title used by the filmmakers on promotional materials at the point of release</li>
+<li><code>originalTitle</code> (string): original title, in the original language</li>
+<li><code>isAdult</code> (boolean):
+<ul>
+<li><code>0</code>: non-adult title;</li>
+<li><code>1</code>: adult title</li>
+</ul></li>
+<li><code>startYear</code> (YYYY): represents the release year of a title. In the case of TV Series, it is the series start year</li>
+<li><code>endYear</code> (YYYY): TV Series end year. ‘\N’ for all other title types</li>
+<li><code>runtimeMinutes</code>: primary runtime of the title, in minutes</li>
+<li><code>genres</code> (string array): includes up to three genres associated with the title</li>
+</ul>
+<p>I load the data.</p>
 <pre class="r"><code># Load title.basics
 title.basics &lt;- gzfile(&quot;data/title.basics.tsv.gz&quot;) %&gt;%
       read_delim(
@@ -142,62 +128,8 @@ title.basics &lt;- gzfile(&quot;data/title.basics.tsv.gz&quot;) %&gt;%
                   runtimeMinutes = col_integer(), 
                   genres = col_character()
                   )
-            )
-
-# Load title.ratings
-title.ratings &lt;- gzfile(&quot;data/title.ratings.tsv.gz&quot;) %&gt;%
-      read_delim(&quot;\t&quot;, 
-                 escape_double = FALSE, 
-                 na = &quot;\\N&quot;, 
-                 trim_ws = TRUE, 
-                 quote=&#39;&#39;,
-                 col_types = cols(
-                       tconst = col_character(), 
-                       averageRating = col_double(),
-                       numVotes = col_integer()
-                       )
-                 )
-
-# Load title.crew, skipping writers column
-title.crew &lt;- gzfile(&quot;data/title.crew.tsv.gz&quot;) %&gt;%
-      read_delim(&quot;\t&quot;, 
-              escape_double = FALSE, 
-              na = &quot;\\N&quot;, 
-              trim_ws = TRUE, 
-              quote=&#39;&#39;,
-              col_types = cols(
-                 tconst = col_character(),
-                 directors = col_character(),
-                 writers = col_skip()
-                 )
-              )
-
-# Load name.basics
-name.basics &lt;- gzfile(&quot;data/name.basics.tsv.gz&quot;) %&gt;%
-      read_delim(&quot;\t&quot;, 
-              escape_double = FALSE, 
-              na = &quot;\\N&quot;, 
-              trim_ws = TRUE, 
-              quote=&#39;&#39;,
-              col_types = cols(
-                 nconst = col_character(),
-                 primaryName = col_character(),
-                 birthYear = col_skip(),
-                 deathYear = col_skip(),
-                 primaryProfession = col_skip(),
-                 knownForTitles = col_skip()
-                 )
-              )</code></pre>
-</div>
-<div id="inspect-data" class="section level1">
-<h1>Inspect Data</h1>
-<p>Let’s check that each dataset contains the information mentioned in the documentation.</p>
-<pre class="r"><code># Function to set kable column width
-col_width &lt;- function(kable_input, data, col, width_min) {
-  column_spec(kable_input = kable_input, 
-              column = which( colnames(data) == enexpr(col) ), 
-              width_min = width_min)
-}</code></pre>
+            )</code></pre>
+<p>This is how this dataset looks like.</p>
 <pre class="r"><code>title.basics %&gt;%
   head %&gt;%
   kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
@@ -419,6 +351,30 @@ Short
 </tr>
 </tbody>
 </table>
+</div>
+<div id="title.ratings.tsv.gz" class="section level3">
+<h3><code>title.ratings.tsv.gz</code></h3>
+<p>This dataset contains the following information:</p>
+<ul>
+<li><code>tconst</code> (string): alphanumeric unique identifier of the title</li>
+<li><code>averageRating</code>: weighted average of all the individual user ratings</li>
+<li><code>numVotes</code> - number of votes the title has received</li>
+</ul>
+<p>I load the data.</p>
+<pre class="r"><code># Load title.ratings
+title.ratings &lt;- gzfile(&quot;data/title.ratings.tsv.gz&quot;) %&gt;%
+      read_delim(&quot;\t&quot;, 
+                 escape_double = FALSE, 
+                 na = &quot;\\N&quot;, 
+                 trim_ws = TRUE, 
+                 quote=&#39;&#39;,
+                 col_types = cols(
+                       tconst = col_character(), 
+                       averageRating = col_double(),
+                       numVotes = col_integer()
+                       )
+                 )</code></pre>
+<p>This is how this dataset looks like.</p>
 <pre class="r"><code>title.ratings %&gt;%
   head %&gt;%
   kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
@@ -508,6 +464,31 @@ tt0000006
 </tr>
 </tbody>
 </table>
+</div>
+<div id="title.crew.tsv.gz" class="section level3">
+<h3><code>title.crew.tsv.gz</code></h3>
+<p>This dataset contains the following information:</p>
+<ul>
+<li><code>tconst</code> (string): alphanumeric unique identifier of the title</li>
+<li><code>directors</code> (array of nconsts): director(s) of the given title</li>
+<li><code>writers</code> (array of nconsts): writer(s) of the given title</li>
+</ul>
+<p>In this post, I’m not interested in <code>writers</code> information, so I won’t be loading that column.</p>
+<p>I load the data.</p>
+<pre class="r"><code># Load title.crew, skipping writers column
+title.crew &lt;- gzfile(&quot;data/title.crew.tsv.gz&quot;) %&gt;%
+      read_delim(&quot;\t&quot;, 
+              escape_double = FALSE, 
+              na = &quot;\\N&quot;, 
+              trim_ws = TRUE, 
+              quote=&#39;&#39;,
+              col_types = cols(
+                 tconst = col_character(),
+                 directors = col_character(),
+                 writers = col_skip()
+                 )
+              )</code></pre>
+<p>This is how this dataset looks like.</p>
 <pre class="r"><code>title.crew %&gt;%
   head(8) %&gt;%
   kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
@@ -590,6 +571,37 @@ nm0005690
 </tr>
 </tbody>
 </table>
+</div>
+<div id="name.basics.tsv.gz" class="section level3">
+<h3><code>name.basics.tsv.gz</code></h3>
+<p>This dataset contains the following information:</p>
+<ul>
+<li><code>nconst</code> (string) - alphanumeric unique identifier of the name/person</li>
+<li><code>primaryName</code> (string): name by which the person is most often credited</li>
+<li><code>birthYear</code>: in YYYY format</li>
+<li><code>deathYear</code>: in YYYY format if applicable, else ‘\N’</li>
+<li><code>primaryProfession</code> (array of strings): the top-3 professions of the person</li>
+<li><code>knownForTitles</code> (array of tconsts): titles the person is known for</li>
+</ul>
+<p>From this dataset, I’ll only use the first two columns (<code>nconst</code> and <code>primaryName</code>)</p>
+<p>I load the data.</p>
+<pre class="r"><code># Load name.basics
+name.basics &lt;- gzfile(&quot;data/name.basics.tsv.gz&quot;) %&gt;%
+      read_delim(&quot;\t&quot;, 
+              escape_double = FALSE, 
+              na = &quot;\\N&quot;, 
+              trim_ws = TRUE, 
+              quote=&#39;&#39;,
+              col_types = cols(
+                 nconst = col_character(),
+                 primaryName = col_character(),
+                 birthYear = col_skip(),
+                 deathYear = col_skip(),
+                 primaryProfession = col_skip(),
+                 knownForTitles = col_skip()
+                 )
+              )</code></pre>
+<p>This is how this dataset looks like.</p>
 <pre class="r"><code>name.basics %&gt;%
   head %&gt;%
   kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
@@ -657,20 +669,43 @@ Ingrid Bergman
 </tr>
 </tbody>
 </table>
+<p>I’ll use this dataset to replace the name codes found in <code>title.crew</code>.</p>
 </div>
-<div id="movies-dataset" class="section level1">
-<h1>Movies Dataset</h1>
-<p>Let’s start the creation of our <strong>movies</strong> dataset. It will consist of titles classified as <code>movie</code> in the <code>title.basics</code> dataset, but not all movies will be part of it.</p>
-<p>Our dataset will consist of movies that:</p>
+</div>
+</div>
+<div id="movies-dataset---part-i" class="section level1">
+<h1>Movies Dataset - Part I</h1>
+<p>Let’s start the creation of our <code>movies</code> dataset.</p>
+<p>In Part I, I’ll work with the datasets downloaded in the previous section to create a <code>movies</code> dataset that will contain information about <strong>movies</strong> with the following characteristics:</p>
 <ul>
 <li>have a release year (<code>startYear</code>) greater than or equal to 1970</li>
 <li>have a runtime (<code>runtimeMinutes</code>) between 45m and 3h30min (210 min)</li>
 <li>have an average rating (<code>averageRating</code>) greater than or equal to 4 on IMDb</li>
 <li>at least 2500 votes (<code>numVotes</code>) on IMDb</li>
 </ul>
-<p>If you want to change any of the parameters I defined, you can do it!</p>
-<p>The following code uses the <code>title.basics</code> and <code>title.ratings</code> dataset to create our <code>movies</code> dataset. It also creates a new column named <code>linkTitle</code> which can be used to create a link to the movie’s IMDb website.</p>
-<p>For some reason, some titles where duplicated in the downloaded dataset. In the code I also remove these duplicates.</p>
+<p>The following code takes <code>title.basics</code>, applies some filters, adds <code>title.ratings</code> information, applies some filters again and finally, creates a new column, <code>linkTitle</code>, which contains the html code necessary to link a movie to its IMDb website.</p>
+<details>
+<p><summary>Code Details</summary>
+This is what the code does:</p>
+<ul>
+<li>Begin with <code>title.basics</code> dataset.</li>
+<li>Filter titles with:
+<ul>
+<li><code>titleType == "movie"</code>,</li>
+<li><code>startYear &gt;= 1970</code></li>
+<li><code>runtimeMinutes &gt;= 45 &amp; runtimeMinutes &lt;= 210</code>.</li>
+</ul></li>
+<li>Add ratings information from <code>title.ratings</code>.</li>
+<li>Delete duplicate titles.</li>
+<li>Filter titles with:
+<ul>
+<li><code>averageRating &gt;= 4</code>,</li>
+<li><code>numVotes &gt;= 2500</code></li>
+</ul></li>
+<li>Create <code>linkTitle</code> column.</li>
+</ul>
+If you want to change any of the parameters I defined in the filters, you can do it!
+</details>
 <pre class="r"><code># Creation of the movies dataset
 movies &lt;- title.basics %&gt;%
   
@@ -697,6 +732,7 @@ movies &lt;- title.basics %&gt;%
      linkTitle = str_c(
        &quot;&lt;a href=&#39;https://www.imdb.com/title/&quot;, tconst, &quot;/&#39;&gt;&quot;, originalTitle,&quot;&lt;/a&gt;&quot;)
      )</code></pre>
+<p>Let’s take a look at our dataset so far.</p>
 <pre class="r"><code>movies %&gt;%
   head %&gt;%
   kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
@@ -984,13 +1020,20 @@ Crime,Drama,Romance
 </tr>
 </tbody>
 </table>
-<p>I’ll use the <code>title.crew</code> dataset to add directors. There are a few consideration to be made about this dataset:</p>
+<p>To finish Part I, I’ll add <code>directors</code> information to our <code>movies</code> dataset.</p>
+<p>This would have been pretty straightforward if <code>title.crew</code> had directors’ names instead of codes. As that’s not the case, some preprocessing is going to be necessary. Also, the fact that when a title has more than one director they are comma-separated in the same cell adds certain complexity to the task of replacing codes with names. But be not afraid, because the <code>tidyverse</code> is going to help us with this task!</p>
+<p>The following code applies the desired change to <code>title.crew</code>.</p>
+<details>
+<p><summary>Code Details</summary>
+This is what the code does:</p>
 <ul>
-<li>Names are coded, and the meaning of the codes are in the <code>name.basics</code> data set</li>
-<li>Some titles have more than one director, separated by a comma</li>
+<li>Begin with <code>title.crew</code> dataset.</li>
+<li>Keep crew that corresponds to titles in <code>movies</code> to speed up calculations</li>
+<li>Go from a dataset where we have one row per title with comma-separated directors codes, to a dataset where we have one row per director code, indicating the title they directed. This step creates a longer dataset which will have duplicate <code>tconst</code> values for titles with more than one director.</li>
+<li>Add the name by directors’ code.</li>
+<li>Return to a dataset with one row per title and comma-separated named directors.</li>
 </ul>
-<p>This means that some preprocessing needs to be applied in order to replace the codes with the actual names, which is what I want to add to the movies dataset.</p>
-<p>Also, before doing this preprocessing I kept only information related to titles in the movies dataset, to speed up the code.</p>
+</details>
 <pre class="r"><code>title.crew &lt;- title.crew %&gt;%
   
   # Keep crew from titles in movies
@@ -1089,11 +1132,11 @@ René Clément
 </tr>
 </tbody>
 </table>
-<p>Now we can left join this table to <code>movies</code>.</p>
+<p>Now we can add this to <code>movies</code>.</p>
 <pre class="r"><code># Add the column to movies
 movies &lt;- movies %&gt;%
    left_join(title.crew, by = &quot;tconst&quot;)</code></pre>
-<p>Let’s take a look at our dataset so far…</p>
+<p>This is how <code>movies</code> looks like in the end of Part I.</p>
 <pre class="r"><code>movies %&gt;%
   head %&gt;%
   kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
@@ -1403,21 +1446,36 @@ Donald Volkman;Leonard Kastle
 </tr>
 </tbody>
 </table>
-<p>So far so good, but I’d like to add more data to each movie. This is when web scrapping joins the party.</p>
-<p>We are going to use the <code>rvest</code> package to extract the following additional information about each movie (when available):</p>
+</div>
+<div id="movies-dataset---part-ii" class="section level1">
+<h1>Movies Dataset - Part II</h1>
+<p>So far so good. We used the downloaded files to create a <code>movies</code> dataset with a lot of information about movies with certain characteristics. But what if we want even <strong>more</strong> information?</p>
+<div id="web-scrapping-imdb" class="section level2">
+<h2>Web scrapping IMDb</h2>
+<p>If we take a look at any movie website in IMDb (for example, <a href="https://www.imdb.com/title/tt0468569/">this one</a>), we see that there is a lot more information related to that movie. I’m particularly interested in the following:</p>
 <ul>
-<li>Metascore. More info about this rating <a href="https://www.imdb.com/list/ls051211184/">HERE</a></li>
+<li><a href="https://www.imdb.com/list/ls051211184/">Metascore</a></li>
 <li>The place or places where the production companies for that title are based, and therefore where the financing originated (Country)</li>
 <li>Estimated production cost of the movie (Budget)</li>
 <li>How much the movie took at the box office in the USA in its first weekend of release (Opening Weekend USA)</li>
 <li>How much the movie made at the box office in USA (Gross USA)</li>
 <li>How much the movie made at the box office all over the world, including the USA (Worldwide Gross)</li>
-<li>Did the movie won any Oscars? If so, how many? If not, was is nominated for at least one oscar? If so, how many? Obs: The variables mean exactly what I described here. This has to do with the way I scrapped this data. This means that if a movie won one Oscar, we don’t know how many nominations it had.</li>
+<li>Awards information</li>
 <li>Full cast</li>
 </ul>
-<p>We have lots of movies for which we want to extract data. This will take some time. To speed up the process, I’ll also use the <code>parallel</code> package. For each movie, we have to look information in two different websites (in one we have all information related to the movie, and in the other we have the full cast). The code below uses all but one of my computer’s cores to run an apply in parallel. Our output, named <code>scrapping</code> consists of a list of elements with length equal to the number of movies to be scrapped, and each element of this list is a list of elements (let’s say, each of this list is one of the variables extracted). Then I’ll work on this element to add the information to the movies dataset.</p>
-<p>There are some things to take into account when scrapping the box office information. Here, based on how the information is structure on IMDb, I extract a vector whose length may vary from movie to movie (in fact, is a character vector with one element for each type of information). In this first step I extract more information than I want, but later I’ll manage to keep only the information that I want and assign it to the proper vector. This might be a little be confusing now, but I hope that by inspecting the code, if interested, you’ll get what is doing!</p>
-<p>On the other side, if you don’t care about the details, you can use the code anyway and see if the final output works for you!</p>
+<p>How can we add that information to our dataset? Now is when <em>web scrapping</em> joins the party. I’ll use the <code>rvest</code> package to extract the information mentioned above for each movie (when available). Also, as we have to do this for 16191 movies, I’ll be using the <code>parallel</code> package to speed up the work. Even with this approach, the code took around one hour and a half to run.</p>
+<p>The following code creates an object named <code>scrapping</code> that contains the information we want for each movie. Some preprocessing is going to be necessary before adding new columns to <code>movies</code>, but I’ll talk about it later.</p>
+<details>
+<p><summary>Code Details</summary>
+I had to retrieve information for a lot of movies, and look for it in two different websites (because full cast data wasn’t in the same title page as the other information). For that reason, I decided to run my code in <code>parallel</code>.</p>
+<p>The first part of the code sets up clusters to run the work in parallel. I defined the number of cores to be used equal to the number of cores in my computer (it has eight cores) minus one, because that’s what is recommended. So I created seven clusters. Remember to stop the clusters when you finish the work.</p>
+<p>I load the necessary libraries to run the code in each cluster by using the <code>clusterEvalQ</code> function. I assigned the result of that function to <code>junk</code> to prevent the print of some output.</p>
+<p>Then we have the extraction function itself. The difference is that instead of using <code>apply</code>, we use <code>parLapply</code>.</p>
+<p>The object <code>scrapping</code> consists of a list of elements with length equal to the number of movies scrapped, and each element of this list is a list of elements (the returned <code>my_list</code> object for each movie).</p>
+<p>The scrapping part is somewhat straightforward. We read the html, we select nodes and extract the text.</p>
+<p>There is one final consideration regarding the scrapping of box office information. Based on how the information is structured on IMDb, in this step I extracted more data than necessary. For each movie, the <code>scrap_boxOffice</code> object is a character vector whose length may vary from movie to movie (because not all movies have all data available) and each element of that vector contains different data. I’ll manage to keep the information I want and assign it to the corresponding vector in the next section.</p>
+Even though I tried to be as clear as possible, this might be a little confusing, but I hope that by inspecting the code you’ll get what is doing!
+</details>
 <pre class="r"><code># Web scrapping more information about movies
 
 # Set the cluster to work in parallel
@@ -1479,6 +1537,20 @@ scrapping &lt;- parLapply(clust, movies$tconst, function(x){
 
 # Stop the cluster
 stopCluster(clust)</code></pre>
+</div>
+<div id="vector-assignment" class="section level2">
+<h2>Vector Assignment</h2>
+<p>The following code uses the <code>scrapping</code> object to create the vectors of data that will be used to add columns to <code>movies</code>.</p>
+<details>
+<p><summary>Code Details</summary>
+This is what the code does:</p>
+<ul>
+<li>Preallocates the corresponding vectors</li>
+<li>Creates <code>no_lenght_zero</code> function to solve an issue realted to how data is scrapped when there is no information</li>
+<li>Fills preallocated vectors</li>
+</ul>
+<code>boxOffice_list</code> is a character vector where each element refers to a different type of data. It is somewhat structured though, so I used a combination of <code>keep</code> and <code>str_detect</code> functions to assign each target data to the corresponding vector.
+</details>
 <pre class="r"><code># Number of movies
 n_movies &lt;- nrow(movies)
 
@@ -1530,6 +1602,10 @@ for (i in seq_along(scrapping)){
   scrap_awards[[i]] &lt;- scrapping[[i]][[&quot;scrap_awards&quot;]] %&gt;%
     no_lenght_zero
 }</code></pre>
+</div>
+<div id="add-columns" class="section level2">
+<h2>Add columns</h2>
+<p>Finally, we can use <code>mutate</code> to add the new columns to <code>movies</code>.</p>
 <pre class="r"><code># Add scrapped columns to data
 movies &lt;- movies %&gt;%
   mutate(cast = scrap_cast,
@@ -1540,6 +1616,8 @@ movies &lt;- movies %&gt;%
          gross_usa_raw = scrap_gross_usa,
          gross_world_raw = scrap_gross_world,
          awards_raw = scrap_awards)</code></pre>
+<p>This is how <code>movies</code> looks like in the end of Part II.</p>
+<p>Obs: I have taken the first 30 characters of cast to make the table look better.</p>
 <pre class="r"><code>movies %&gt;%
   head %&gt;%
   mutate(cast = cast %&gt;%
@@ -2048,10 +2126,22 @@ NA
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+<div id="movies-dataset---part-iii" class="section level1">
+<h1>Movies Dataset - Part III</h1>
+<p>In Part III, I’ll clean the columns created in Part II.</p>
+<div id="metascore" class="section level2">
+<h2>Metascore</h2>
+<p><code>metascore_raw</code> is a character column. I used <code>parse_number</code> to create <code>metascore</code>, which is numeric.</p>
 <pre class="r"><code># metascore to number
 movies &lt;- movies %&gt;%
   mutate(metascore = metascore_raw %&gt;%
            parse_number)</code></pre>
+</div>
+<div id="country" class="section level2">
+<h2>Country</h2>
+<p><code>country_raw</code> needs some cleaning that can be done with <code>stringr::str_replace_all</code> function.</p>
 <pre class="r"><code>movies &lt;- movies %&gt;%
   mutate(country = country_raw %&gt;%
            str_replace_all(&quot;Country:&quot;, &quot;&quot;) %&gt;%
@@ -2059,6 +2149,10 @@ movies &lt;- movies %&gt;%
            str_replace_all(&quot; &quot;, &quot;&quot;) %&gt;%
            str_replace_all(&quot;\\|&quot;, &quot;;&quot;)
 )</code></pre>
+</div>
+<div id="box-office-information" class="section level2">
+<h2>Box Office Information</h2>
+<p>By taking a fast look at this “money” variables, it seemed that the currency was dollars ($). Just to be sure, I created the function <code>check_currency</code> with the following logic: if the sum of values where I find the dollar sign ($) and <code>NA</code> values of a column is equal to the total number of rows, then all currencies are the same (and dollars).</p>
 <pre class="r"><code>check_currency &lt;- function(data, col) {
   n_movies &lt;- nrow(data)
   missing &lt;- data %&gt;%
@@ -2073,6 +2167,7 @@ movies &lt;- movies %&gt;%
   
   identical(missing + dollar_sign, n_movies)
 }</code></pre>
+<p>After applying this function to the corresponding columns, we see that not all currencies are the same. Later I checked the dataset and saw in fact that this was the case.</p>
 <pre class="r"><code>check_currency(movies, budget_raw)</code></pre>
 <pre><code>## [1] FALSE</code></pre>
 <pre class="r"><code>check_currency(movies, open_usa_raw)</code></pre>
@@ -2081,9 +2176,11 @@ movies &lt;- movies %&gt;%
 <pre><code>## [1] FALSE</code></pre>
 <pre class="r"><code>check_currency(movies, gross_world_raw)</code></pre>
 <pre><code>## [1] FALSE</code></pre>
+<p>I decided to keep only those values express in dollars, assigning <code>NA</code> otherwise. For that matter, I created the <code>keep_dollar</code> function.</p>
 <pre class="r"><code>keep_dollar &lt;- function(col) {
   ifelse(str_detect(col, &quot;\\$&quot;), col, NA_real_)
 }</code></pre>
+<p>Now we can create our new variables, through <code>parse_number</code>. This function works just fine, even with columns where there were more numbers present (for example, take a look at <code>open_usa_raw</code> and <code>open_usa</code>)</p>
 <pre class="r"><code>movies &lt;- movies %&gt;%
   mutate(budget = keep_dollar(budget_raw) %&gt;%
            parse_number,
@@ -2093,6 +2190,21 @@ movies &lt;- movies %&gt;%
            parse_number,
          gross_world = keep_dollar(gross_world_raw) %&gt;%
            parse_number)</code></pre>
+</div>
+<div id="awards-information" class="section level2">
+<h2>Awards information</h2>
+<p>Using the <code>awards_raw</code> column I created a few variables.</p>
+<p>For <strong>every</strong> movie:</p>
+<ul>
+<li><code>won_oscar</code>, an indicator variable that takes the value 1 if the movie won any Oscar and 0 otherwise</li>
+<li><code>oscars_won</code>, the number of Oscars won by a movie</li>
+</ul>
+<p>For movies that <strong>didn’t win an Oscar</strong>:</p>
+<ul>
+<li><code>nominated_oscar</code>, an indicator variable that takes the value 1 if the movie was nominated for any Oscar and 0 otherwise</li>
+<li><code>oscars_nominations</code>, the number of Oscar nominations</li>
+</ul>
+<p>Obs: If a movie won at least one Oscar, we don’t know how many nominations it had. This has to do with the way I scrapped this data.</p>
 <pre class="r"><code>movies &lt;- movies %&gt;%
   mutate(
     
@@ -2124,6 +2236,7 @@ movies &lt;- movies %&gt;%
       no = 0
     )
 )</code></pre>
+<p>The final dataset looks like this. I kept the raw columns for you to see the differences with the cleaned ones.</p>
 <pre class="r"><code>movies %&gt;%
   head %&gt;%
   mutate(cast = cast %&gt;%
@@ -2855,6 +2968,7 @@ NA
 <div id="refs" class="references">
 <div id="ref-wiki:imdb">
 <p>Wikipedia contributors. 2020. “IMDb — Wikipedia, the Free Encyclopedia.” <a href="https://en.wikipedia.org/w/index.php?title=IMDb&amp;oldid=959154715">https://en.wikipedia.org/w/index.php?title=IMDb&amp;oldid=959154715</a>.</p>
+</div>
 </div>
 </div>
 </div>
