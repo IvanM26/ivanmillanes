@@ -75,6 +75,7 @@ library(tidyverse)
 library(parallel)
 library(rvest)
 library(knitr)
+library(kableExtra)
 ```
 
 # Download Data
@@ -188,22 +189,52 @@ name.basics <- gzfile("data/name.basics.tsv.gz") %>%
 Let's check that each dataset contains the information mentioned in the documentation.
 
 ```{r}
-# Function to create a kable table with a dataset head()
-kable_head <- function(x, n = 6) {
-  x %>%
-    head(n) %>%
-    kable
+# Function to set kable column width
+col_width <- function(kable_input, data, col, width_min) {
+  column_spec(kable_input = kable_input, 
+              column = which( colnames(data) == enexpr(col) ), 
+              width_min = width_min)
 }
 ```
 
-
-```{r head-data, cache=TRUE}
-kable_head(title.basics)
-kable_head(title.ratings)
-kable_head(title.crew, 8)
-kable_head(name.basics)
+```{r inspect-basics, cache=TRUE}
+title.basics %>%
+  head %>%
+  kable(format = "html", table.attr = "style = \"color: white;\"") %>%
+  col_width(title.basics, tconst, "3em") %>%
+  col_width(title.basics, titleType, "3em") %>%
+  col_width(title.basics, primaryTitle, "18em") %>%
+  col_width(title.basics, originalTitle, "18em") %>%
+  col_width(title.basics, isAdult, "3em") %>%
+  col_width(title.basics, startYear, "3em") %>%
+  col_width(title.basics, endYear, "3em") %>%
+  col_width(title.basics, runtimeMinutes, "4em") %>%
+  col_width(title.basics, genres, "5em")
 ```
 
+```{r inspect-ratings, cache=TRUE}
+title.ratings %>%
+  head %>%
+  kable(format = "html", table.attr = "style = \"color: white;\"") %>%
+  col_width(title.ratings, tconst, "3em") %>%
+  col_width(title.ratings, averageRating, "3em") %>%
+  col_width(title.ratings, numVotes, "3em")
+```
+
+```{r inspect-crew, cache=TRUE}
+title.crew %>%
+  head(8) %>%
+  kable(format = "html", table.attr = "style = \"color: white;\"") %>%
+  col_width(title.crew, directors, "14em")
+```
+
+```{r inspect-name, cache=TRUE}
+name.basics %>%
+  head %>%
+  kable(format = "html", table.attr = "style = \"color: white;\"") %>%
+  col_width(name.basics, nconst, "3em") %>%
+  col_width(name.basics, primaryName, "10em")
+```
 
 # Movies Dataset
 
@@ -252,7 +283,21 @@ movies <- title.basics %>%
 ```
 
 ```{r}
-kable_head(movies)
+movies %>%
+  head %>%
+  kable(format = "html", table.attr = "style = \"color: white;\"") %>%
+  col_width(movies, tconst, "3em") %>%
+  col_width(movies, titleType, "3em") %>%
+  col_width(movies, primaryTitle, "18em") %>%
+  col_width(movies, originalTitle, "18em") %>%
+  col_width(movies, isAdult, "3em") %>%
+  col_width(movies, startYear, "3em") %>%
+  col_width(movies, endYear, "3em") %>%
+  col_width(movies, runtimeMinutes, "4em") %>%
+  col_width(movies, genres, "5em") %>%
+  col_width(movies, averageRating, "3em") %>%
+  col_width(movies, numVotes, "3em") %>%
+  col_width(movies, linkTitle, "45em")
 ```
 
 I'll use the `title.crew` dataset to add directors. There are a few consideration to be made about this dataset:
@@ -285,7 +330,10 @@ title.crew <- title.crew %>%
 Let's see how `title.crew` looks like now.
 
 ```{r}
-kable_head(title.crew)
+title.crew %>%
+  head(8) %>%
+  kable(format = "html", table.attr = "style = \"color: white;\"") %>%
+  col_width(title.crew, directors, "18em")
 ```
 
 Now we can left join this table to `movies`.
@@ -299,7 +347,22 @@ movies <- movies %>%
 Let's take a look at our dataset so far...
 
 ```{r}
-kable_head(movies)
+movies %>%
+  head %>%
+  kable(format = "html", table.attr = "style = \"color: white;\"") %>%
+  col_width(movies, tconst, "3em") %>%
+  col_width(movies, titleType, "3em") %>%
+  col_width(movies, primaryTitle, "18em") %>%
+  col_width(movies, originalTitle, "18em") %>%
+  col_width(movies, isAdult, "3em") %>%
+  col_width(movies, startYear, "3em") %>%
+  col_width(movies, endYear, "3em") %>%
+  col_width(movies, runtimeMinutes, "4em") %>%
+  col_width(movies, genres, "5em") %>%
+  col_width(movies, averageRating, "3em") %>%
+  col_width(movies, numVotes, "3em") %>%
+  col_width(movies, linkTitle, "45em") %>%
+  col_width(movies, directors, "18em")
 ```
 
 So far so good, but I'd like to add more data to each movie. This is when web scrapping joins the party.
@@ -321,7 +384,7 @@ There are some things to take into account when scrapping the box office informa
 
 On the other side, if you don't care about the details, you can use the code anyway and see if the final output works for you!
 
-```{r scrapping, eval=FALSE}
+```{r scrapping, cache=TRUE}
 # Web scrapping more information about movies
 
 # Set the cluster to work in parallel
@@ -329,7 +392,11 @@ n_cores <- detectCores() - 1
 clust <- makeCluster(n_cores)
 
 # Load packages on each cluster
-clusterEvalQ(clust, {
+# Obs: library() returns a character vector of all the attached packages, but
+# it does so invisibly. When executed via clusterEvalQ, it isn't invisible.
+# To make it "invisible" again, I assigned the result of clusterEvalQ to junk. 
+
+junk <- clusterEvalQ(clust, {
   library(dplyr)
   library(stringr)
   library(rvest)
@@ -358,7 +425,9 @@ scrapping <- parLapply(clust, movies$tconst, function(x){
   
   
   # Read cast page
-  cast_page <- read_html(str_c("https://www.imdb.com/title/", x, "/fullcredits?ref_=tt_cl_sm#cast"))
+  cast_page <- read_html(
+    str_c("https://www.imdb.com/title/", x, "/fullcredits?ref_=tt_cl_sm#cast")
+    )
   
   # Scrap cast
   scrap_cast <- cast_page %>%
@@ -379,8 +448,8 @@ scrapping <- parLapply(clust, movies$tconst, function(x){
 stopCluster(clust)
 ```
 
-
-```{r, eval=FALSE}
+```{r scrapping-vectors, cache=TRUE}
+# Number of movies
 n_movies <- nrow(movies)
 
 # Preallocate vectors
@@ -404,26 +473,37 @@ no_lenght_zero <- function(x){
 # Assign extracted info
 for (i in seq_along(scrapping)){
   
-  scrap_cast[[i]] <- no_lenght_zero(scrapping[[i]][["scrap_cast"]])
+  scrap_cast[[i]] <- scrapping[[i]][["scrap_cast"]] %>%
+    no_lenght_zero
   
-  scrap_metascore[[i]] <- no_lenght_zero(scrapping[[i]][["scrap_metascore"]])
+  scrap_metascore[[i]] <- scrapping[[i]][["scrap_metascore"]] %>%
+    no_lenght_zero
   
   boxOffice_list <- scrapping[[i]][["scrap_boxOffice"]]
   
-  scrap_country[[i]] <- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, "Country:")))
-  scrap_budget[[i]] <- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, "Budget:")))
-  scrap_open_usa[[i]] <- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, "Opening Weekend USA:")))
-  scrap_gross_usa[[i]] <- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, "Gross USA:")))
-  scrap_gross_world[[i]] <- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, "Cumulative Worldwide Gross:")))
-
-  scrap_awards[[i]] <- no_lenght_zero(scrapping[[i]][["scrap_awards"]])
+  scrap_country[[i]] <- boxOffice_list %>%
+    keep(~ str_detect(.x, "Country:")) %>%
+    no_lenght_zero
+  scrap_budget[[i]] <- boxOffice_list %>%
+    keep(~ str_detect(.x, "Budget:")) %>%
+    no_lenght_zero
+  scrap_open_usa[[i]] <- boxOffice_list %>%
+    keep(~ str_detect(.x, "Opening Weekend USA:")) %>%
+    no_lenght_zero
+  scrap_gross_usa[[i]] <- boxOffice_list %>%
+    keep(~ str_detect(.x, "Gross USA:")) %>%
+    no_lenght_zero
+  scrap_gross_world[[i]] <- boxOffice_list %>%
+    keep(~ str_detect(.x, "Cumulative Worldwide Gross:")) %>%
+    no_lenght_zero
+  
+  scrap_awards[[i]] <- scrapping[[i]][["scrap_awards"]] %>%
+    no_lenght_zero
 }
-
 ```
 
-
-```{r, eval=FALSE}
-# Add columns to data
+```{r scrapping-addcols}
+# Add scrapped columns to data
 movies <- movies %>%
   mutate(cast = scrap_cast,
          metascore_raw = scrap_metascore,
@@ -435,3 +515,167 @@ movies <- movies %>%
          awards_raw = scrap_awards)
 ```
 
+```{r}
+movies %>%
+  head %>%
+  mutate(cast = cast %>%
+           str_sub(1, 30) %>%
+           str_c("...")) %>%
+  kable(format = "html", table.attr = "style = \"color: white;\"") %>%
+  col_width(movies, tconst, "3em") %>%
+  col_width(movies, titleType, "3em") %>%
+  col_width(movies, primaryTitle, "18em") %>%
+  col_width(movies, originalTitle, "18em") %>%
+  col_width(movies, isAdult, "3em") %>%
+  col_width(movies, startYear, "3em") %>%
+  col_width(movies, endYear, "3em") %>%
+  col_width(movies, runtimeMinutes, "4em") %>%
+  col_width(movies, genres, "5em") %>%
+  col_width(movies, averageRating, "3em") %>%
+  col_width(movies, numVotes, "3em") %>%
+  col_width(movies, linkTitle, "45em") %>%
+  col_width(movies, directors, "18em") %>%
+  col_width(movies, cast, "18em") %>%
+  col_width(movies, metascore_raw, "3em") %>%
+  col_width(movies, country_raw, "18em") %>%
+  col_width(movies, budget_raw, "18em") %>%
+  col_width(movies, open_usa_raw, "28em") %>%
+  col_width(movies, gross_usa_raw, "18em") %>%
+  col_width(movies, gross_world_raw, "25em") %>%
+  col_width(movies, awards_raw, "18em")
+
+```
+
+
+```{r}
+# metascore to number
+movies <- movies %>%
+  mutate(metascore = metascore_raw %>%
+           parse_number)
+```
+
+```{r}
+movies <- movies %>%
+  mutate(country = country_raw %>%
+           str_replace_all("Country:", "") %>%
+           str_replace_all("\\n", "") %>%
+           str_replace_all(" ", "") %>%
+           str_replace_all("\\|", ";")
+)
+```
+
+```{r}
+check_currency <- function(data, col) {
+  n_movies <- nrow(data)
+  missing <- data %>%
+    pull(enexpr(col)) %>%
+    is.na %>%
+    sum
+  
+  dollar_sign <- data %>%
+    pull(enexpr(col)) %>%
+    str_detect("\\$") %>%
+    sum(na.rm = TRUE)
+  
+  identical(missing + dollar_sign, n_movies)
+}
+```
+
+```{r}
+check_currency(movies, budget_raw)
+check_currency(movies, open_usa_raw)
+check_currency(movies, gross_usa_raw)
+check_currency(movies, gross_world_raw)
+```
+
+```{r}
+keep_dollar <- function(col) {
+  ifelse(str_detect(col, "\\$"), col, NA_real_)
+}
+```
+
+```{r}
+movies <- movies %>%
+  mutate(budget = keep_dollar(budget_raw) %>%
+           parse_number,
+         open_usa = keep_dollar(open_usa_raw) %>%
+           parse_number,
+         gross_usa = keep_dollar(gross_usa_raw) %>%
+           parse_number,
+         gross_world = keep_dollar(gross_world_raw) %>%
+           parse_number)
+```
+
+```{r}
+movies <- movies %>%
+  mutate(
+    
+    won_oscar = ifelse(
+      test = str_detect(awards_raw, "Won") & 
+        str_detect(awards_raw, "Oscar") &
+        !is.na(awards_raw), 
+      yes = 1, 
+      no = 0
+      ),
+    
+    oscars_won = ifelse(
+      test = won_oscar == 1, 
+      yes = parse_number(awards_raw),
+      no = 0
+    ),
+    
+    nominated_oscar = ifelse(
+      test = str_detect(awards_raw, "Nominated") & 
+        str_detect(awards_raw, "Oscar") &
+        !is.na(awards_raw), 
+      yes = 1, 
+      no = 0
+    ),
+    
+    oscars_nominations = ifelse(
+      test = nominated_oscar == 1, 
+      yes = parse_number(awards_raw),
+      no = 0
+    )
+)
+```
+
+```{r}
+movies %>%
+  head %>%
+  mutate(cast = cast %>%
+           str_sub(1, 30) %>%
+           str_c("...")) %>%
+  kable(format = "html", table.attr = "style = \"color: white;\"") %>%
+  col_width(movies, tconst, "3em") %>%
+  col_width(movies, titleType, "3em") %>%
+  col_width(movies, primaryTitle, "18em") %>%
+  col_width(movies, originalTitle, "18em") %>%
+  col_width(movies, isAdult, "3em") %>%
+  col_width(movies, startYear, "3em") %>%
+  col_width(movies, endYear, "3em") %>%
+  col_width(movies, runtimeMinutes, "4em") %>%
+  col_width(movies, genres, "5em") %>%
+  col_width(movies, averageRating, "3em") %>%
+  col_width(movies, numVotes, "3em") %>%
+  col_width(movies, linkTitle, "45em") %>%
+  col_width(movies, directors, "18em") %>%
+  col_width(movies, cast, "18em") %>%
+  col_width(movies, metascore_raw, "3em") %>%
+  col_width(movies, country_raw, "18em") %>%
+  col_width(movies, budget_raw, "18em") %>%
+  col_width(movies, open_usa_raw, "28em") %>%
+  col_width(movies, gross_usa_raw, "18em") %>%
+  col_width(movies, gross_world_raw, "25em") %>%
+  col_width(movies, awards_raw, "18em") %>%
+  col_width(movies, metascore, "3em") %>%
+  col_width(movies, country, "9em") %>%
+  col_width(movies, budget, "7em") %>%
+  col_width(movies, open_usa, "7em") %>%
+  col_width(movies, gross_usa, "7em") %>%
+  col_width(movies, gross_world, "7em") %>%
+  col_width(movies, won_oscar, "10em") %>%
+  col_width(movies, oscars_won, "10em") %>%
+  col_width(movies, nominated_oscar, "10em") %>%
+  col_width(movies, oscars_nominations, "10em")
+```

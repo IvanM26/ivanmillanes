@@ -23,6 +23,7 @@ projects: []
 bibliography: bibliography.bib
 ---
 
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
 
 
 <div id="introduction" class="section level1">
@@ -86,7 +87,8 @@ bibliography: bibliography.bib
 <pre class="r"><code>library(tidyverse)
 library(parallel)
 library(rvest)
-library(knitr)</code></pre>
+library(knitr)
+library(kableExtra)</code></pre>
 </div>
 <div id="download-data" class="section level1">
 <h1>Download Data</h1>
@@ -190,213 +192,468 @@ name.basics &lt;- gzfile(&quot;data/name.basics.tsv.gz&quot;) %&gt;%
 <div id="inspect-data" class="section level1">
 <h1>Inspect Data</h1>
 <p>Let’s check that each dataset contains the information mentioned in the documentation.</p>
-<pre class="r"><code># Function to create a kable table with a dataset head()
-kable_head &lt;- function(x, n = 6) {
-  x %&gt;%
-    head(n) %&gt;%
-    kable
+<pre class="r"><code># Function to set kable column width
+col_width &lt;- function(kable_input, data, col, width_min) {
+  column_spec(kable_input = kable_input, 
+              column = which( colnames(data) == enexpr(col) ), 
+              width_min = width_min)
 }</code></pre>
-<pre class="r"><code>kable_head(title.basics)</code></pre>
-<table>
+<pre class="r"><code>title.basics %&gt;%
+  head %&gt;%
+  kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
+  col_width(title.basics, tconst, &quot;3em&quot;) %&gt;%
+  col_width(title.basics, titleType, &quot;3em&quot;) %&gt;%
+  col_width(title.basics, primaryTitle, &quot;18em&quot;) %&gt;%
+  col_width(title.basics, originalTitle, &quot;18em&quot;) %&gt;%
+  col_width(title.basics, isAdult, &quot;3em&quot;) %&gt;%
+  col_width(title.basics, startYear, &quot;3em&quot;) %&gt;%
+  col_width(title.basics, endYear, &quot;3em&quot;) %&gt;%
+  col_width(title.basics, runtimeMinutes, &quot;4em&quot;) %&gt;%
+  col_width(title.basics, genres, &quot;5em&quot;)</code></pre>
+<table style="color: white;">
 <thead>
-<tr class="header">
-<th align="left">tconst</th>
-<th align="left">titleType</th>
-<th align="left">primaryTitle</th>
-<th align="left">originalTitle</th>
-<th align="left">isAdult</th>
-<th align="right">startYear</th>
-<th align="right">endYear</th>
-<th align="right">runtimeMinutes</th>
-<th align="left">genres</th>
+<tr>
+<th style="text-align:left;">
+tconst
+</th>
+<th style="text-align:left;">
+titleType
+</th>
+<th style="text-align:left;">
+primaryTitle
+</th>
+<th style="text-align:left;">
+originalTitle
+</th>
+<th style="text-align:left;">
+isAdult
+</th>
+<th style="text-align:right;">
+startYear
+</th>
+<th style="text-align:right;">
+endYear
+</th>
+<th style="text-align:right;">
+runtimeMinutes
+</th>
+<th style="text-align:left;">
+genres
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">tt0000001</td>
-<td align="left">short</td>
-<td align="left">Carmencita</td>
-<td align="left">Carmencita</td>
-<td align="left">FALSE</td>
-<td align="right">1894</td>
-<td align="right">NA</td>
-<td align="right">1</td>
-<td align="left">Documentary,Short</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000001
+</td>
+<td style="text-align:left;min-width: 3em; ">
+short
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Carmencita
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Carmencita
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1894
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+1
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Documentary,Short
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0000002</td>
-<td align="left">short</td>
-<td align="left">Le clown et ses chiens</td>
-<td align="left">Le clown et ses chiens</td>
-<td align="left">FALSE</td>
-<td align="right">1892</td>
-<td align="right">NA</td>
-<td align="right">5</td>
-<td align="left">Animation,Short</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000002
+</td>
+<td style="text-align:left;min-width: 3em; ">
+short
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Le clown et ses chiens
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Le clown et ses chiens
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1892
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+5
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Animation,Short
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0000003</td>
-<td align="left">short</td>
-<td align="left">Pauvre Pierrot</td>
-<td align="left">Pauvre Pierrot</td>
-<td align="left">FALSE</td>
-<td align="right">1892</td>
-<td align="right">NA</td>
-<td align="right">4</td>
-<td align="left">Animation,Comedy,Romance</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000003
+</td>
+<td style="text-align:left;min-width: 3em; ">
+short
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Pauvre Pierrot
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Pauvre Pierrot
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1892
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+4
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Animation,Comedy,Romance
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0000004</td>
-<td align="left">short</td>
-<td align="left">Un bon bock</td>
-<td align="left">Un bon bock</td>
-<td align="left">FALSE</td>
-<td align="right">1892</td>
-<td align="right">NA</td>
-<td align="right">12</td>
-<td align="left">Animation,Short</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000004
+</td>
+<td style="text-align:left;min-width: 3em; ">
+short
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Un bon bock
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Un bon bock
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1892
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+12
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Animation,Short
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0000005</td>
-<td align="left">short</td>
-<td align="left">Blacksmith Scene</td>
-<td align="left">Blacksmith Scene</td>
-<td align="left">FALSE</td>
-<td align="right">1893</td>
-<td align="right">NA</td>
-<td align="right">1</td>
-<td align="left">Comedy,Short</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000005
+</td>
+<td style="text-align:left;min-width: 3em; ">
+short
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Blacksmith Scene
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Blacksmith Scene
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1893
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+1
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Comedy,Short
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0000006</td>
-<td align="left">short</td>
-<td align="left">Chinese Opium Den</td>
-<td align="left">Chinese Opium Den</td>
-<td align="left">FALSE</td>
-<td align="right">1894</td>
-<td align="right">NA</td>
-<td align="right">1</td>
-<td align="left">Short</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000006
+</td>
+<td style="text-align:left;min-width: 3em; ">
+short
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Chinese Opium Den
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Chinese Opium Den
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1894
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+1
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Short
+</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>kable_head(title.ratings)</code></pre>
-<table>
+<pre class="r"><code>title.ratings %&gt;%
+  head %&gt;%
+  kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
+  col_width(title.ratings, tconst, &quot;3em&quot;) %&gt;%
+  col_width(title.ratings, averageRating, &quot;3em&quot;) %&gt;%
+  col_width(title.ratings, numVotes, &quot;3em&quot;)</code></pre>
+<table style="color: white;">
 <thead>
-<tr class="header">
-<th align="left">tconst</th>
-<th align="right">averageRating</th>
-<th align="right">numVotes</th>
+<tr>
+<th style="text-align:left;">
+tconst
+</th>
+<th style="text-align:right;">
+averageRating
+</th>
+<th style="text-align:right;">
+numVotes
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">tt0000001</td>
-<td align="right">5.6</td>
-<td align="right">1618</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000001
+</td>
+<td style="text-align:right;min-width: 3em; ">
+5.6
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1618
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0000002</td>
-<td align="right">6.0</td>
-<td align="right">198</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000002
+</td>
+<td style="text-align:right;min-width: 3em; ">
+6.0
+</td>
+<td style="text-align:right;min-width: 3em; ">
+198
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0000003</td>
-<td align="right">6.5</td>
-<td align="right">1298</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000003
+</td>
+<td style="text-align:right;min-width: 3em; ">
+6.5
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1298
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0000004</td>
-<td align="right">6.1</td>
-<td align="right">122</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000004
+</td>
+<td style="text-align:right;min-width: 3em; ">
+6.1
+</td>
+<td style="text-align:right;min-width: 3em; ">
+122
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0000005</td>
-<td align="right">6.1</td>
-<td align="right">2077</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000005
+</td>
+<td style="text-align:right;min-width: 3em; ">
+6.1
+</td>
+<td style="text-align:right;min-width: 3em; ">
+2077
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0000006</td>
-<td align="right">5.1</td>
-<td align="right">112</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0000006
+</td>
+<td style="text-align:right;min-width: 3em; ">
+5.1
+</td>
+<td style="text-align:right;min-width: 3em; ">
+112
+</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>kable_head(title.crew, 8)</code></pre>
-<table>
+<pre class="r"><code>title.crew %&gt;%
+  head(8) %&gt;%
+  kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
+  col_width(title.crew, directors, &quot;14em&quot;)</code></pre>
+<table style="color: white;">
 <thead>
-<tr class="header">
-<th align="left">tconst</th>
-<th align="left">directors</th>
+<tr>
+<th style="text-align:left;">
+tconst
+</th>
+<th style="text-align:left;">
+directors
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">tt0000001</td>
-<td align="left">nm0005690</td>
+<tr>
+<td style="text-align:left;">
+tt0000001
+</td>
+<td style="text-align:left;min-width: 14em; ">
+nm0005690
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0000002</td>
-<td align="left">nm0721526</td>
+<tr>
+<td style="text-align:left;">
+tt0000002
+</td>
+<td style="text-align:left;min-width: 14em; ">
+nm0721526
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0000003</td>
-<td align="left">nm0721526</td>
+<tr>
+<td style="text-align:left;">
+tt0000003
+</td>
+<td style="text-align:left;min-width: 14em; ">
+nm0721526
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0000004</td>
-<td align="left">nm0721526</td>
+<tr>
+<td style="text-align:left;">
+tt0000004
+</td>
+<td style="text-align:left;min-width: 14em; ">
+nm0721526
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0000005</td>
-<td align="left">nm0005690</td>
+<tr>
+<td style="text-align:left;">
+tt0000005
+</td>
+<td style="text-align:left;min-width: 14em; ">
+nm0005690
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0000006</td>
-<td align="left">nm0005690</td>
+<tr>
+<td style="text-align:left;">
+tt0000006
+</td>
+<td style="text-align:left;min-width: 14em; ">
+nm0005690
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0000007</td>
-<td align="left">nm0374658,nm0005690</td>
+<tr>
+<td style="text-align:left;">
+tt0000007
+</td>
+<td style="text-align:left;min-width: 14em; ">
+nm0374658,nm0005690
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0000008</td>
-<td align="left">nm0005690</td>
+<tr>
+<td style="text-align:left;">
+tt0000008
+</td>
+<td style="text-align:left;min-width: 14em; ">
+nm0005690
+</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>kable_head(name.basics)</code></pre>
-<table>
+<pre class="r"><code>name.basics %&gt;%
+  head %&gt;%
+  kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
+  col_width(name.basics, nconst, &quot;3em&quot;) %&gt;%
+  col_width(name.basics, primaryName, &quot;10em&quot;)</code></pre>
+<table style="color: white;">
 <thead>
-<tr class="header">
-<th align="left">nconst</th>
-<th align="left">primaryName</th>
+<tr>
+<th style="text-align:left;">
+nconst
+</th>
+<th style="text-align:left;">
+primaryName
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">nm0000001</td>
-<td align="left">Fred Astaire</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+nm0000001
+</td>
+<td style="text-align:left;min-width: 10em; ">
+Fred Astaire
+</td>
 </tr>
-<tr class="even">
-<td align="left">nm0000002</td>
-<td align="left">Lauren Bacall</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+nm0000002
+</td>
+<td style="text-align:left;min-width: 10em; ">
+Lauren Bacall
+</td>
 </tr>
-<tr class="odd">
-<td align="left">nm0000003</td>
-<td align="left">Brigitte Bardot</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+nm0000003
+</td>
+<td style="text-align:left;min-width: 10em; ">
+Brigitte Bardot
+</td>
 </tr>
-<tr class="even">
-<td align="left">nm0000004</td>
-<td align="left">John Belushi</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+nm0000004
+</td>
+<td style="text-align:left;min-width: 10em; ">
+John Belushi
+</td>
 </tr>
-<tr class="odd">
-<td align="left">nm0000005</td>
-<td align="left">Ingmar Bergman</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+nm0000005
+</td>
+<td style="text-align:left;min-width: 10em; ">
+Ingmar Bergman
+</td>
 </tr>
-<tr class="even">
-<td align="left">nm0000006</td>
-<td align="left">Ingrid Bergman</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+nm0000006
+</td>
+<td style="text-align:left;min-width: 10em; ">
+Ingrid Bergman
+</td>
 </tr>
 </tbody>
 </table>
@@ -440,108 +697,290 @@ movies &lt;- title.basics %&gt;%
      linkTitle = str_c(
        &quot;&lt;a href=&#39;https://www.imdb.com/title/&quot;, tconst, &quot;/&#39;&gt;&quot;, originalTitle,&quot;&lt;/a&gt;&quot;)
      )</code></pre>
-<pre class="r"><code>kable_head(movies)</code></pre>
-<table>
+<pre class="r"><code>movies %&gt;%
+  head %&gt;%
+  kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
+  col_width(movies, tconst, &quot;3em&quot;) %&gt;%
+  col_width(movies, titleType, &quot;3em&quot;) %&gt;%
+  col_width(movies, primaryTitle, &quot;18em&quot;) %&gt;%
+  col_width(movies, originalTitle, &quot;18em&quot;) %&gt;%
+  col_width(movies, isAdult, &quot;3em&quot;) %&gt;%
+  col_width(movies, startYear, &quot;3em&quot;) %&gt;%
+  col_width(movies, endYear, &quot;3em&quot;) %&gt;%
+  col_width(movies, runtimeMinutes, &quot;4em&quot;) %&gt;%
+  col_width(movies, genres, &quot;5em&quot;) %&gt;%
+  col_width(movies, averageRating, &quot;3em&quot;) %&gt;%
+  col_width(movies, numVotes, &quot;3em&quot;) %&gt;%
+  col_width(movies, linkTitle, &quot;45em&quot;)</code></pre>
+<table style="color: white;">
 <thead>
-<tr class="header">
-<th align="left">tconst</th>
-<th align="left">titleType</th>
-<th align="left">primaryTitle</th>
-<th align="left">originalTitle</th>
-<th align="left">isAdult</th>
-<th align="right">startYear</th>
-<th align="right">endYear</th>
-<th align="right">runtimeMinutes</th>
-<th align="left">genres</th>
-<th align="right">averageRating</th>
-<th align="right">numVotes</th>
-<th align="left">linkTitle</th>
+<tr>
+<th style="text-align:left;">
+tconst
+</th>
+<th style="text-align:left;">
+titleType
+</th>
+<th style="text-align:left;">
+primaryTitle
+</th>
+<th style="text-align:left;">
+originalTitle
+</th>
+<th style="text-align:left;">
+isAdult
+</th>
+<th style="text-align:right;">
+startYear
+</th>
+<th style="text-align:right;">
+endYear
+</th>
+<th style="text-align:right;">
+runtimeMinutes
+</th>
+<th style="text-align:left;">
+genres
+</th>
+<th style="text-align:right;">
+averageRating
+</th>
+<th style="text-align:right;">
+numVotes
+</th>
+<th style="text-align:left;">
+linkTitle
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">tt0035423</td>
-<td align="left">movie</td>
-<td align="left">Kate &amp; Leopold</td>
-<td align="left">Kate &amp; Leopold</td>
-<td align="left">FALSE</td>
-<td align="right">2001</td>
-<td align="right">NA</td>
-<td align="right">118</td>
-<td align="left">Comedy,Fantasy,Romance</td>
-<td align="right">6.4</td>
-<td align="right">77127</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0035423/'>Kate &amp; Leopold</a></td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0035423
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Kate &amp; Leopold
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Kate &amp; Leopold
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+2001
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+118
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Comedy,Fantasy,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+6.4
+</td>
+<td style="text-align:right;min-width: 3em; ">
+77127
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0035423/&#39;%3EKate" class="uri">https://www.imdb.com/title/tt0035423/'&gt;Kate</a> &amp; Leopold&lt;/a&gt;
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0064106</td>
-<td align="left">movie</td>
-<td align="left">Le Boucher</td>
-<td align="left">Le boucher</td>
-<td align="left">FALSE</td>
-<td align="right">1970</td>
-<td align="right">NA</td>
-<td align="right">93</td>
-<td align="left">Drama,Thriller</td>
-<td align="right">7.5</td>
-<td align="right">7348</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0064106/'>Le boucher</a></td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064106
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Le Boucher
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Le boucher
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+93
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama,Thriller
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.5
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7348
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064106/&#39;%3ELe" class="uri">https://www.imdb.com/title/tt0064106/'&gt;Le</a> boucher&lt;/a&gt;
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0064165</td>
-<td align="left">movie</td>
-<td align="left">The Things of Life</td>
-<td align="left">Les choses de la vie</td>
-<td align="left">FALSE</td>
-<td align="right">1970</td>
-<td align="right">NA</td>
-<td align="right">89</td>
-<td align="left">Drama,Romance</td>
-<td align="right">7.6</td>
-<td align="right">3664</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0064165/'>Les choses de la vie</a></td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064165
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Things of Life
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Les choses de la vie
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+89
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.6
+</td>
+<td style="text-align:right;min-width: 3em; ">
+3664
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064165/&#39;%3ELes" class="uri">https://www.imdb.com/title/tt0064165/'&gt;Les</a> choses de la vie&lt;/a&gt;
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0064177</td>
-<td align="left">movie</td>
-<td align="left">Colossus: The Forbin Project</td>
-<td align="left">Colossus: The Forbin Project</td>
-<td align="left">FALSE</td>
-<td align="right">1970</td>
-<td align="right">NA</td>
-<td align="right">100</td>
-<td align="left">Sci-Fi,Thriller</td>
-<td align="right">7.1</td>
-<td align="right">7860</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0064177/'>Colossus: The Forbin Project</a></td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064177
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Colossus: The Forbin Project
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Colossus: The Forbin Project
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+100
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Sci-Fi,Thriller
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.1
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7860
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064177/&#39;%3EColossus" class="uri">https://www.imdb.com/title/tt0064177/'&gt;Colossus</a>: The Forbin Project&lt;/a&gt;
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0064285</td>
-<td align="left">movie</td>
-<td align="left">The Wild Child</td>
-<td align="left">L’enfant sauvage</td>
-<td align="left">FALSE</td>
-<td align="right">1970</td>
-<td align="right">NA</td>
-<td align="right">83</td>
-<td align="left">Drama</td>
-<td align="right">7.5</td>
-<td align="right">7238</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0064285/'>L’enfant sauvage</a></td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064285
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Wild Child
+</td>
+<td style="text-align:left;min-width: 18em; ">
+L’enfant sauvage
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+83
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.5
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7238
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064285/&#39;%3EL&#39;enfant" class="uri">https://www.imdb.com/title/tt0064285/'&gt;L'enfant</a> sauvage&lt;/a&gt;
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0064437</td>
-<td align="left">movie</td>
-<td align="left">The Honeymoon Killers</td>
-<td align="left">The Honeymoon Killers</td>
-<td align="left">FALSE</td>
-<td align="right">1970</td>
-<td align="right">NA</td>
-<td align="right">107</td>
-<td align="left">Crime,Drama,Romance</td>
-<td align="right">7.0</td>
-<td align="right">4229</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0064437/'>The Honeymoon Killers</a></td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064437
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Honeymoon Killers
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Honeymoon Killers
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+107
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Crime,Drama,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.0
+</td>
+<td style="text-align:right;min-width: 3em; ">
+4229
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064437/&#39;%3EThe" class="uri">https://www.imdb.com/title/tt0064437/'&gt;The</a> Honeymoon Killers&lt;/a&gt;
+</td>
 </tr>
 </tbody>
 </table>
@@ -568,38 +1007,85 @@ movies &lt;- title.basics %&gt;%
    summarise(directors = str_c(primaryName, collapse = &quot;;&quot;)) %&gt;%
    ungroup()</code></pre>
 <p>Let’s see how <code>title.crew</code> looks like now.</p>
-<pre class="r"><code>kable_head(title.crew)</code></pre>
-<table>
+<pre class="r"><code>title.crew %&gt;%
+  head(8) %&gt;%
+  kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
+  col_width(title.crew, directors, &quot;18em&quot;)</code></pre>
+<table style="color: white;">
 <thead>
-<tr class="header">
-<th align="left">tconst</th>
-<th align="left">directors</th>
+<tr>
+<th style="text-align:left;">
+tconst
+</th>
+<th style="text-align:left;">
+directors
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">tt0035423</td>
-<td align="left">James Mangold</td>
+<tr>
+<td style="text-align:left;">
+tt0035423
+</td>
+<td style="text-align:left;min-width: 18em; ">
+James Mangold
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0064106</td>
-<td align="left">Claude Chabrol</td>
+<tr>
+<td style="text-align:left;">
+tt0064106
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Claude Chabrol
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0064165</td>
-<td align="left">Claude Sautet</td>
+<tr>
+<td style="text-align:left;">
+tt0064165
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Claude Sautet
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0064177</td>
-<td align="left">Joseph Sargent</td>
+<tr>
+<td style="text-align:left;">
+tt0064177
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Joseph Sargent
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0064285</td>
-<td align="left">François Truffaut</td>
+<tr>
+<td style="text-align:left;">
+tt0064285
+</td>
+<td style="text-align:left;min-width: 18em; ">
+François Truffaut
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0064437</td>
-<td align="left">Donald Volkman;Leonard Kastle</td>
+<tr>
+<td style="text-align:left;">
+tt0064437
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Donald Volkman;Leonard Kastle
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tt0064451
+</td>
+<td style="text-align:left;min-width: 18em; ">
+King Hu
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+tt0064791
+</td>
+<td style="text-align:left;min-width: 18em; ">
+René Clément
+</td>
 </tr>
 </tbody>
 </table>
@@ -608,115 +1094,312 @@ movies &lt;- title.basics %&gt;%
 movies &lt;- movies %&gt;%
    left_join(title.crew, by = &quot;tconst&quot;)</code></pre>
 <p>Let’s take a look at our dataset so far…</p>
-<pre class="r"><code>kable_head(movies)</code></pre>
-<table>
+<pre class="r"><code>movies %&gt;%
+  head %&gt;%
+  kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
+  col_width(movies, tconst, &quot;3em&quot;) %&gt;%
+  col_width(movies, titleType, &quot;3em&quot;) %&gt;%
+  col_width(movies, primaryTitle, &quot;18em&quot;) %&gt;%
+  col_width(movies, originalTitle, &quot;18em&quot;) %&gt;%
+  col_width(movies, isAdult, &quot;3em&quot;) %&gt;%
+  col_width(movies, startYear, &quot;3em&quot;) %&gt;%
+  col_width(movies, endYear, &quot;3em&quot;) %&gt;%
+  col_width(movies, runtimeMinutes, &quot;4em&quot;) %&gt;%
+  col_width(movies, genres, &quot;5em&quot;) %&gt;%
+  col_width(movies, averageRating, &quot;3em&quot;) %&gt;%
+  col_width(movies, numVotes, &quot;3em&quot;) %&gt;%
+  col_width(movies, linkTitle, &quot;45em&quot;) %&gt;%
+  col_width(movies, directors, &quot;18em&quot;)</code></pre>
+<table style="color: white;">
 <thead>
-<tr class="header">
-<th align="left">tconst</th>
-<th align="left">titleType</th>
-<th align="left">primaryTitle</th>
-<th align="left">originalTitle</th>
-<th align="left">isAdult</th>
-<th align="right">startYear</th>
-<th align="right">endYear</th>
-<th align="right">runtimeMinutes</th>
-<th align="left">genres</th>
-<th align="right">averageRating</th>
-<th align="right">numVotes</th>
-<th align="left">linkTitle</th>
-<th align="left">directors</th>
+<tr>
+<th style="text-align:left;">
+tconst
+</th>
+<th style="text-align:left;">
+titleType
+</th>
+<th style="text-align:left;">
+primaryTitle
+</th>
+<th style="text-align:left;">
+originalTitle
+</th>
+<th style="text-align:left;">
+isAdult
+</th>
+<th style="text-align:right;">
+startYear
+</th>
+<th style="text-align:right;">
+endYear
+</th>
+<th style="text-align:right;">
+runtimeMinutes
+</th>
+<th style="text-align:left;">
+genres
+</th>
+<th style="text-align:right;">
+averageRating
+</th>
+<th style="text-align:right;">
+numVotes
+</th>
+<th style="text-align:left;">
+linkTitle
+</th>
+<th style="text-align:left;">
+directors
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">tt0035423</td>
-<td align="left">movie</td>
-<td align="left">Kate &amp; Leopold</td>
-<td align="left">Kate &amp; Leopold</td>
-<td align="left">FALSE</td>
-<td align="right">2001</td>
-<td align="right">NA</td>
-<td align="right">118</td>
-<td align="left">Comedy,Fantasy,Romance</td>
-<td align="right">6.4</td>
-<td align="right">77127</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0035423/'>Kate &amp; Leopold</a></td>
-<td align="left">James Mangold</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0035423
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Kate &amp; Leopold
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Kate &amp; Leopold
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+2001
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+118
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Comedy,Fantasy,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+6.4
+</td>
+<td style="text-align:right;min-width: 3em; ">
+77127
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0035423/&#39;%3EKate" class="uri">https://www.imdb.com/title/tt0035423/'&gt;Kate</a> &amp; Leopold&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+James Mangold
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0064106</td>
-<td align="left">movie</td>
-<td align="left">Le Boucher</td>
-<td align="left">Le boucher</td>
-<td align="left">FALSE</td>
-<td align="right">1970</td>
-<td align="right">NA</td>
-<td align="right">93</td>
-<td align="left">Drama,Thriller</td>
-<td align="right">7.5</td>
-<td align="right">7348</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0064106/'>Le boucher</a></td>
-<td align="left">Claude Chabrol</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064106
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Le Boucher
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Le boucher
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+93
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama,Thriller
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.5
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7348
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064106/&#39;%3ELe" class="uri">https://www.imdb.com/title/tt0064106/'&gt;Le</a> boucher&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Claude Chabrol
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0064165</td>
-<td align="left">movie</td>
-<td align="left">The Things of Life</td>
-<td align="left">Les choses de la vie</td>
-<td align="left">FALSE</td>
-<td align="right">1970</td>
-<td align="right">NA</td>
-<td align="right">89</td>
-<td align="left">Drama,Romance</td>
-<td align="right">7.6</td>
-<td align="right">3664</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0064165/'>Les choses de la vie</a></td>
-<td align="left">Claude Sautet</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064165
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Things of Life
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Les choses de la vie
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+89
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.6
+</td>
+<td style="text-align:right;min-width: 3em; ">
+3664
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064165/&#39;%3ELes" class="uri">https://www.imdb.com/title/tt0064165/'&gt;Les</a> choses de la vie&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Claude Sautet
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0064177</td>
-<td align="left">movie</td>
-<td align="left">Colossus: The Forbin Project</td>
-<td align="left">Colossus: The Forbin Project</td>
-<td align="left">FALSE</td>
-<td align="right">1970</td>
-<td align="right">NA</td>
-<td align="right">100</td>
-<td align="left">Sci-Fi,Thriller</td>
-<td align="right">7.1</td>
-<td align="right">7860</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0064177/'>Colossus: The Forbin Project</a></td>
-<td align="left">Joseph Sargent</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064177
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Colossus: The Forbin Project
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Colossus: The Forbin Project
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+100
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Sci-Fi,Thriller
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.1
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7860
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064177/&#39;%3EColossus" class="uri">https://www.imdb.com/title/tt0064177/'&gt;Colossus</a>: The Forbin Project&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Joseph Sargent
+</td>
 </tr>
-<tr class="odd">
-<td align="left">tt0064285</td>
-<td align="left">movie</td>
-<td align="left">The Wild Child</td>
-<td align="left">L’enfant sauvage</td>
-<td align="left">FALSE</td>
-<td align="right">1970</td>
-<td align="right">NA</td>
-<td align="right">83</td>
-<td align="left">Drama</td>
-<td align="right">7.5</td>
-<td align="right">7238</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0064285/'>L’enfant sauvage</a></td>
-<td align="left">François Truffaut</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064285
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Wild Child
+</td>
+<td style="text-align:left;min-width: 18em; ">
+L’enfant sauvage
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+83
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.5
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7238
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064285/&#39;%3EL&#39;enfant" class="uri">https://www.imdb.com/title/tt0064285/'&gt;L'enfant</a> sauvage&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+François Truffaut
+</td>
 </tr>
-<tr class="even">
-<td align="left">tt0064437</td>
-<td align="left">movie</td>
-<td align="left">The Honeymoon Killers</td>
-<td align="left">The Honeymoon Killers</td>
-<td align="left">FALSE</td>
-<td align="right">1970</td>
-<td align="right">NA</td>
-<td align="right">107</td>
-<td align="left">Crime,Drama,Romance</td>
-<td align="right">7.0</td>
-<td align="right">4229</td>
-<td align="left"><a href='https://www.imdb.com/title/tt0064437/'>The Honeymoon Killers</a></td>
-<td align="left">Donald Volkman;Leonard Kastle</td>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064437
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Honeymoon Killers
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Honeymoon Killers
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+107
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Crime,Drama,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.0
+</td>
+<td style="text-align:right;min-width: 3em; ">
+4229
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064437/&#39;%3EThe" class="uri">https://www.imdb.com/title/tt0064437/'&gt;The</a> Honeymoon Killers&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Donald Volkman;Leonard Kastle
+</td>
 </tr>
 </tbody>
 </table>
@@ -742,7 +1425,11 @@ n_cores &lt;- detectCores() - 1
 clust &lt;- makeCluster(n_cores)
 
 # Load packages on each cluster
-clusterEvalQ(clust, {
+# Obs: library() returns a character vector of all the attached packages, but
+# it does so invisibly. When executed via clusterEvalQ, it isn&#39;t invisible.
+# To make it &quot;invisible&quot; again, I assigned the result of clusterEvalQ to junk. 
+
+junk &lt;- clusterEvalQ(clust, {
   library(dplyr)
   library(stringr)
   library(rvest)
@@ -771,7 +1458,9 @@ scrapping &lt;- parLapply(clust, movies$tconst, function(x){
   
   
   # Read cast page
-  cast_page &lt;- read_html(str_c(&quot;https://www.imdb.com/title/&quot;, x, &quot;/fullcredits?ref_=tt_cl_sm#cast&quot;))
+  cast_page &lt;- read_html(
+    str_c(&quot;https://www.imdb.com/title/&quot;, x, &quot;/fullcredits?ref_=tt_cl_sm#cast&quot;)
+    )
   
   # Scrap cast
   scrap_cast &lt;- cast_page %&gt;%
@@ -790,7 +1479,8 @@ scrapping &lt;- parLapply(clust, movies$tconst, function(x){
 
 # Stop the cluster
 stopCluster(clust)</code></pre>
-<pre class="r"><code>n_movies &lt;- nrow(movies)
+<pre class="r"><code># Number of movies
+n_movies &lt;- nrow(movies)
 
 # Preallocate vectors
 scrap_cast &lt;- vector(&quot;character&quot;, length = n_movies)
@@ -813,21 +1503,34 @@ no_lenght_zero &lt;- function(x){
 # Assign extracted info
 for (i in seq_along(scrapping)){
   
-  scrap_cast[[i]] &lt;- no_lenght_zero(scrapping[[i]][[&quot;scrap_cast&quot;]])
+  scrap_cast[[i]] &lt;- scrapping[[i]][[&quot;scrap_cast&quot;]] %&gt;%
+    no_lenght_zero
   
-  scrap_metascore[[i]] &lt;- no_lenght_zero(scrapping[[i]][[&quot;scrap_metascore&quot;]])
+  scrap_metascore[[i]] &lt;- scrapping[[i]][[&quot;scrap_metascore&quot;]] %&gt;%
+    no_lenght_zero
   
   boxOffice_list &lt;- scrapping[[i]][[&quot;scrap_boxOffice&quot;]]
   
-  scrap_country[[i]] &lt;- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, &quot;Country:&quot;)))
-  scrap_budget[[i]] &lt;- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, &quot;Budget:&quot;)))
-  scrap_open_usa[[i]] &lt;- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, &quot;Opening Weekend USA:&quot;)))
-  scrap_gross_usa[[i]] &lt;- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, &quot;Gross USA:&quot;)))
-  scrap_gross_world[[i]] &lt;- no_lenght_zero(keep(boxOffice_list, ~ str_detect(.x, &quot;Cumulative Worldwide Gross:&quot;)))
-
-  scrap_awards[[i]] &lt;- no_lenght_zero(scrapping[[i]][[&quot;scrap_awards&quot;]])
+  scrap_country[[i]] &lt;- boxOffice_list %&gt;%
+    keep(~ str_detect(.x, &quot;Country:&quot;)) %&gt;%
+    no_lenght_zero
+  scrap_budget[[i]] &lt;- boxOffice_list %&gt;%
+    keep(~ str_detect(.x, &quot;Budget:&quot;)) %&gt;%
+    no_lenght_zero
+  scrap_open_usa[[i]] &lt;- boxOffice_list %&gt;%
+    keep(~ str_detect(.x, &quot;Opening Weekend USA:&quot;)) %&gt;%
+    no_lenght_zero
+  scrap_gross_usa[[i]] &lt;- boxOffice_list %&gt;%
+    keep(~ str_detect(.x, &quot;Gross USA:&quot;)) %&gt;%
+    no_lenght_zero
+  scrap_gross_world[[i]] &lt;- boxOffice_list %&gt;%
+    keep(~ str_detect(.x, &quot;Cumulative Worldwide Gross:&quot;)) %&gt;%
+    no_lenght_zero
+  
+  scrap_awards[[i]] &lt;- scrapping[[i]][[&quot;scrap_awards&quot;]] %&gt;%
+    no_lenght_zero
 }</code></pre>
-<pre class="r"><code># Add columns to data
+<pre class="r"><code># Add scrapped columns to data
 movies &lt;- movies %&gt;%
   mutate(cast = scrap_cast,
          metascore_raw = scrap_metascore,
@@ -837,6 +1540,1318 @@ movies &lt;- movies %&gt;%
          gross_usa_raw = scrap_gross_usa,
          gross_world_raw = scrap_gross_world,
          awards_raw = scrap_awards)</code></pre>
+<pre class="r"><code>movies %&gt;%
+  head %&gt;%
+  mutate(cast = cast %&gt;%
+           str_sub(1, 30) %&gt;%
+           str_c(&quot;...&quot;)) %&gt;%
+  kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
+  col_width(movies, tconst, &quot;3em&quot;) %&gt;%
+  col_width(movies, titleType, &quot;3em&quot;) %&gt;%
+  col_width(movies, primaryTitle, &quot;18em&quot;) %&gt;%
+  col_width(movies, originalTitle, &quot;18em&quot;) %&gt;%
+  col_width(movies, isAdult, &quot;3em&quot;) %&gt;%
+  col_width(movies, startYear, &quot;3em&quot;) %&gt;%
+  col_width(movies, endYear, &quot;3em&quot;) %&gt;%
+  col_width(movies, runtimeMinutes, &quot;4em&quot;) %&gt;%
+  col_width(movies, genres, &quot;5em&quot;) %&gt;%
+  col_width(movies, averageRating, &quot;3em&quot;) %&gt;%
+  col_width(movies, numVotes, &quot;3em&quot;) %&gt;%
+  col_width(movies, linkTitle, &quot;45em&quot;) %&gt;%
+  col_width(movies, directors, &quot;18em&quot;) %&gt;%
+  col_width(movies, cast, &quot;18em&quot;) %&gt;%
+  col_width(movies, metascore_raw, &quot;3em&quot;) %&gt;%
+  col_width(movies, country_raw, &quot;18em&quot;) %&gt;%
+  col_width(movies, budget_raw, &quot;18em&quot;) %&gt;%
+  col_width(movies, open_usa_raw, &quot;28em&quot;) %&gt;%
+  col_width(movies, gross_usa_raw, &quot;18em&quot;) %&gt;%
+  col_width(movies, gross_world_raw, &quot;25em&quot;) %&gt;%
+  col_width(movies, awards_raw, &quot;18em&quot;)</code></pre>
+<table style="color: white;">
+<thead>
+<tr>
+<th style="text-align:left;">
+tconst
+</th>
+<th style="text-align:left;">
+titleType
+</th>
+<th style="text-align:left;">
+primaryTitle
+</th>
+<th style="text-align:left;">
+originalTitle
+</th>
+<th style="text-align:left;">
+isAdult
+</th>
+<th style="text-align:right;">
+startYear
+</th>
+<th style="text-align:right;">
+endYear
+</th>
+<th style="text-align:right;">
+runtimeMinutes
+</th>
+<th style="text-align:left;">
+genres
+</th>
+<th style="text-align:right;">
+averageRating
+</th>
+<th style="text-align:right;">
+numVotes
+</th>
+<th style="text-align:left;">
+linkTitle
+</th>
+<th style="text-align:left;">
+directors
+</th>
+<th style="text-align:left;">
+cast
+</th>
+<th style="text-align:left;">
+metascore_raw
+</th>
+<th style="text-align:left;">
+country_raw
+</th>
+<th style="text-align:left;">
+budget_raw
+</th>
+<th style="text-align:left;">
+open_usa_raw
+</th>
+<th style="text-align:left;">
+gross_usa_raw
+</th>
+<th style="text-align:left;">
+gross_world_raw
+</th>
+<th style="text-align:left;">
+awards_raw
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0035423
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Kate &amp; Leopold
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Kate &amp; Leopold
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+2001
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+118
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Comedy,Fantasy,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+6.4
+</td>
+<td style="text-align:right;min-width: 3em; ">
+77127
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0035423/&#39;%3EKate" class="uri">https://www.imdb.com/title/tt0035423/'&gt;Kate</a> &amp; Leopold&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+James Mangold
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Meg Ryan; Hugh Jackman; Liev …
+</td>
+<td style="text-align:left;min-width: 3em; ">
+44
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+USA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Budget:$48,000,000
+(estimated)
+</td>
+<td style="text-align:left;min-width: 28em; ">
+Opening Weekend USA: $9,725,408,
+30 December 2001
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Gross USA: $47,121,859
+</td>
+<td style="text-align:left;min-width: 25em; ">
+Cumulative Worldwide Gross: $76,019,048
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Nominated for
+1
+Oscar.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064106
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Le Boucher
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Le boucher
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+93
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama,Thriller
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.5
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7348
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064106/&#39;%3ELe" class="uri">https://www.imdb.com/title/tt0064106/'&gt;Le</a> boucher&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Claude Chabrol
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Stéphane Audran; Jean Yanne; …
+</td>
+<td style="text-align:left;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+France
+|
+Italy
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 28em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Gross USA: $474,458
+</td>
+<td style="text-align:left;min-width: 25em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Nominated for
+1
+BAFTA Film Award.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064165
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Things of Life
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Les choses de la vie
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+89
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.6
+</td>
+<td style="text-align:right;min-width: 3em; ">
+3664
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064165/&#39;%3ELes" class="uri">https://www.imdb.com/title/tt0064165/'&gt;Les</a> choses de la vie&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Claude Sautet
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Michel Piccoli; Romy Schneide…
+</td>
+<td style="text-align:left;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+Switzerland
+|
+France
+|
+Italy
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 28em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Gross USA: $5,063
+</td>
+<td style="text-align:left;min-width: 25em; ">
+Cumulative Worldwide Gross: $5,063
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064177
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Colossus: The Forbin Project
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Colossus: The Forbin Project
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+100
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Sci-Fi,Thriller
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.1
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7860
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064177/&#39;%3EColossus" class="uri">https://www.imdb.com/title/tt0064177/'&gt;Colossus</a>: The Forbin Project&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Joseph Sargent
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Eric Braeden; Susan Clark; Go…
+</td>
+<td style="text-align:left;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+USA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 28em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 25em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064285
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Wild Child
+</td>
+<td style="text-align:left;min-width: 18em; ">
+L’enfant sauvage
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+83
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.5
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7238
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064285/&#39;%3EL&#39;enfant" class="uri">https://www.imdb.com/title/tt0064285/'&gt;L'enfant</a> sauvage&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+François Truffaut
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Jean-Pierre Cargol; François …
+</td>
+<td style="text-align:left;min-width: 3em; ">
+94
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+France
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 28em; ">
+Opening Weekend USA: $11,206,
+25 April 1999
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Gross USA: $65,560
+</td>
+<td style="text-align:left;min-width: 25em; ">
+Cumulative Worldwide Gross: $65,560
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064437
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Honeymoon Killers
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Honeymoon Killers
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+107
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Crime,Drama,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.0
+</td>
+<td style="text-align:right;min-width: 3em; ">
+4229
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064437/&#39;%3EThe" class="uri">https://www.imdb.com/title/tt0064437/'&gt;The</a> Honeymoon Killers&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Donald Volkman;Leonard Kastle
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Shirley Stoler; Tony Lo Bianc…
+</td>
+<td style="text-align:left;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+USA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Budget:$150,000
+(estimated)
+</td>
+<td style="text-align:left;min-width: 28em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 25em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># metascore to number
+movies &lt;- movies %&gt;%
+  mutate(metascore = metascore_raw %&gt;%
+           parse_number)</code></pre>
+<pre class="r"><code>movies &lt;- movies %&gt;%
+  mutate(country = country_raw %&gt;%
+           str_replace_all(&quot;Country:&quot;, &quot;&quot;) %&gt;%
+           str_replace_all(&quot;\\n&quot;, &quot;&quot;) %&gt;%
+           str_replace_all(&quot; &quot;, &quot;&quot;) %&gt;%
+           str_replace_all(&quot;\\|&quot;, &quot;;&quot;)
+)</code></pre>
+<pre class="r"><code>check_currency &lt;- function(data, col) {
+  n_movies &lt;- nrow(data)
+  missing &lt;- data %&gt;%
+    pull(enexpr(col)) %&gt;%
+    is.na %&gt;%
+    sum
+  
+  dollar_sign &lt;- data %&gt;%
+    pull(enexpr(col)) %&gt;%
+    str_detect(&quot;\\$&quot;) %&gt;%
+    sum(na.rm = TRUE)
+  
+  identical(missing + dollar_sign, n_movies)
+}</code></pre>
+<pre class="r"><code>check_currency(movies, budget_raw)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code>check_currency(movies, open_usa_raw)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>check_currency(movies, gross_usa_raw)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code>check_currency(movies, gross_world_raw)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code>keep_dollar &lt;- function(col) {
+  ifelse(str_detect(col, &quot;\\$&quot;), col, NA_real_)
+}</code></pre>
+<pre class="r"><code>movies &lt;- movies %&gt;%
+  mutate(budget = keep_dollar(budget_raw) %&gt;%
+           parse_number,
+         open_usa = keep_dollar(open_usa_raw) %&gt;%
+           parse_number,
+         gross_usa = keep_dollar(gross_usa_raw) %&gt;%
+           parse_number,
+         gross_world = keep_dollar(gross_world_raw) %&gt;%
+           parse_number)</code></pre>
+<pre class="r"><code>movies &lt;- movies %&gt;%
+  mutate(
+    
+    won_oscar = ifelse(
+      test = str_detect(awards_raw, &quot;Won&quot;) &amp; 
+        str_detect(awards_raw, &quot;Oscar&quot;) &amp;
+        !is.na(awards_raw), 
+      yes = 1, 
+      no = 0
+      ),
+    
+    oscars_won = ifelse(
+      test = won_oscar == 1, 
+      yes = parse_number(awards_raw),
+      no = 0
+    ),
+    
+    nominated_oscar = ifelse(
+      test = str_detect(awards_raw, &quot;Nominated&quot;) &amp; 
+        str_detect(awards_raw, &quot;Oscar&quot;) &amp;
+        !is.na(awards_raw), 
+      yes = 1, 
+      no = 0
+    ),
+    
+    oscars_nominations = ifelse(
+      test = nominated_oscar == 1, 
+      yes = parse_number(awards_raw),
+      no = 0
+    )
+)</code></pre>
+<pre class="r"><code>movies %&gt;%
+  head %&gt;%
+  mutate(cast = cast %&gt;%
+           str_sub(1, 30) %&gt;%
+           str_c(&quot;...&quot;)) %&gt;%
+  kable(format = &quot;html&quot;, table.attr = &quot;style = \&quot;color: white;\&quot;&quot;) %&gt;%
+  col_width(movies, tconst, &quot;3em&quot;) %&gt;%
+  col_width(movies, titleType, &quot;3em&quot;) %&gt;%
+  col_width(movies, primaryTitle, &quot;18em&quot;) %&gt;%
+  col_width(movies, originalTitle, &quot;18em&quot;) %&gt;%
+  col_width(movies, isAdult, &quot;3em&quot;) %&gt;%
+  col_width(movies, startYear, &quot;3em&quot;) %&gt;%
+  col_width(movies, endYear, &quot;3em&quot;) %&gt;%
+  col_width(movies, runtimeMinutes, &quot;4em&quot;) %&gt;%
+  col_width(movies, genres, &quot;5em&quot;) %&gt;%
+  col_width(movies, averageRating, &quot;3em&quot;) %&gt;%
+  col_width(movies, numVotes, &quot;3em&quot;) %&gt;%
+  col_width(movies, linkTitle, &quot;45em&quot;) %&gt;%
+  col_width(movies, directors, &quot;18em&quot;) %&gt;%
+  col_width(movies, cast, &quot;18em&quot;) %&gt;%
+  col_width(movies, metascore_raw, &quot;3em&quot;) %&gt;%
+  col_width(movies, country_raw, &quot;18em&quot;) %&gt;%
+  col_width(movies, budget_raw, &quot;18em&quot;) %&gt;%
+  col_width(movies, open_usa_raw, &quot;28em&quot;) %&gt;%
+  col_width(movies, gross_usa_raw, &quot;18em&quot;) %&gt;%
+  col_width(movies, gross_world_raw, &quot;25em&quot;) %&gt;%
+  col_width(movies, awards_raw, &quot;18em&quot;) %&gt;%
+  col_width(movies, metascore, &quot;3em&quot;) %&gt;%
+  col_width(movies, country, &quot;9em&quot;) %&gt;%
+  col_width(movies, budget, &quot;7em&quot;) %&gt;%
+  col_width(movies, open_usa, &quot;7em&quot;) %&gt;%
+  col_width(movies, gross_usa, &quot;7em&quot;) %&gt;%
+  col_width(movies, gross_world, &quot;7em&quot;) %&gt;%
+  col_width(movies, won_oscar, &quot;10em&quot;) %&gt;%
+  col_width(movies, oscars_won, &quot;10em&quot;) %&gt;%
+  col_width(movies, nominated_oscar, &quot;10em&quot;) %&gt;%
+  col_width(movies, oscars_nominations, &quot;10em&quot;)</code></pre>
+<table style="color: white;">
+<thead>
+<tr>
+<th style="text-align:left;">
+tconst
+</th>
+<th style="text-align:left;">
+titleType
+</th>
+<th style="text-align:left;">
+primaryTitle
+</th>
+<th style="text-align:left;">
+originalTitle
+</th>
+<th style="text-align:left;">
+isAdult
+</th>
+<th style="text-align:right;">
+startYear
+</th>
+<th style="text-align:right;">
+endYear
+</th>
+<th style="text-align:right;">
+runtimeMinutes
+</th>
+<th style="text-align:left;">
+genres
+</th>
+<th style="text-align:right;">
+averageRating
+</th>
+<th style="text-align:right;">
+numVotes
+</th>
+<th style="text-align:left;">
+linkTitle
+</th>
+<th style="text-align:left;">
+directors
+</th>
+<th style="text-align:left;">
+cast
+</th>
+<th style="text-align:left;">
+metascore_raw
+</th>
+<th style="text-align:left;">
+country_raw
+</th>
+<th style="text-align:left;">
+budget_raw
+</th>
+<th style="text-align:left;">
+open_usa_raw
+</th>
+<th style="text-align:left;">
+gross_usa_raw
+</th>
+<th style="text-align:left;">
+gross_world_raw
+</th>
+<th style="text-align:left;">
+awards_raw
+</th>
+<th style="text-align:right;">
+metascore
+</th>
+<th style="text-align:left;">
+country
+</th>
+<th style="text-align:right;">
+budget
+</th>
+<th style="text-align:right;">
+open_usa
+</th>
+<th style="text-align:right;">
+gross_usa
+</th>
+<th style="text-align:right;">
+gross_world
+</th>
+<th style="text-align:right;">
+won_oscar
+</th>
+<th style="text-align:right;">
+oscars_won
+</th>
+<th style="text-align:right;">
+nominated_oscar
+</th>
+<th style="text-align:right;">
+oscars_nominations
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0035423
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Kate &amp; Leopold
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Kate &amp; Leopold
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+2001
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+118
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Comedy,Fantasy,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+6.4
+</td>
+<td style="text-align:right;min-width: 3em; ">
+77127
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0035423/&#39;%3EKate" class="uri">https://www.imdb.com/title/tt0035423/'&gt;Kate</a> &amp; Leopold&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+James Mangold
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Meg Ryan; Hugh Jackman; Liev …
+</td>
+<td style="text-align:left;min-width: 3em; ">
+44
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+USA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Budget:$48,000,000
+(estimated)
+</td>
+<td style="text-align:left;min-width: 28em; ">
+Opening Weekend USA: $9,725,408,
+30 December 2001
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Gross USA: $47,121,859
+</td>
+<td style="text-align:left;min-width: 25em; ">
+Cumulative Worldwide Gross: $76,019,048
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Nominated for
+1
+Oscar.
+</td>
+<td style="text-align:right;min-width: 3em; ">
+44
+</td>
+<td style="text-align:left;min-width: 9em; ">
+USA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+4.8e+07
+</td>
+<td style="text-align:right;min-width: 7em; ">
+9725408
+</td>
+<td style="text-align:right;min-width: 7em; ">
+47121859
+</td>
+<td style="text-align:right;min-width: 7em; ">
+76019048
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+1
+</td>
+<td style="text-align:right;min-width: 10em; ">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064106
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Le Boucher
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Le boucher
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+93
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama,Thriller
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.5
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7348
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064106/&#39;%3ELe" class="uri">https://www.imdb.com/title/tt0064106/'&gt;Le</a> boucher&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Claude Chabrol
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Stéphane Audran; Jean Yanne; …
+</td>
+<td style="text-align:left;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+France
+|
+Italy
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 28em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Gross USA: $474,458
+</td>
+<td style="text-align:left;min-width: 25em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Nominated for
+1
+BAFTA Film Award.
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 9em; ">
+France;Italy
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+474458
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064165
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Things of Life
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Les choses de la vie
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+89
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.6
+</td>
+<td style="text-align:right;min-width: 3em; ">
+3664
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064165/&#39;%3ELes" class="uri">https://www.imdb.com/title/tt0064165/'&gt;Les</a> choses de la vie&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Claude Sautet
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Michel Piccoli; Romy Schneide…
+</td>
+<td style="text-align:left;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+Switzerland
+|
+France
+|
+Italy
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 28em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Gross USA: $5,063
+</td>
+<td style="text-align:left;min-width: 25em; ">
+Cumulative Worldwide Gross: $5,063
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 9em; ">
+Switzerland;France;Italy
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+5063
+</td>
+<td style="text-align:right;min-width: 7em; ">
+5063
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064177
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Colossus: The Forbin Project
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Colossus: The Forbin Project
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+100
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Sci-Fi,Thriller
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.1
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7860
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064177/&#39;%3EColossus" class="uri">https://www.imdb.com/title/tt0064177/'&gt;Colossus</a>: The Forbin Project&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Joseph Sargent
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Eric Braeden; Susan Clark; Go…
+</td>
+<td style="text-align:left;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+USA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 28em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 25em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 9em; ">
+USA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064285
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Wild Child
+</td>
+<td style="text-align:left;min-width: 18em; ">
+L’enfant sauvage
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+83
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Drama
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.5
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7238
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064285/&#39;%3EL&#39;enfant" class="uri">https://www.imdb.com/title/tt0064285/'&gt;L'enfant</a> sauvage&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+François Truffaut
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Jean-Pierre Cargol; François …
+</td>
+<td style="text-align:left;min-width: 3em; ">
+94
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+France
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 28em; ">
+Opening Weekend USA: $11,206,
+25 April 1999
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Gross USA: $65,560
+</td>
+<td style="text-align:left;min-width: 25em; ">
+Cumulative Worldwide Gross: $65,560
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 3em; ">
+94
+</td>
+<td style="text-align:left;min-width: 9em; ">
+France
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+11206
+</td>
+<td style="text-align:right;min-width: 7em; ">
+65560
+</td>
+<td style="text-align:right;min-width: 7em; ">
+65560
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;min-width: 3em; ">
+tt0064437
+</td>
+<td style="text-align:left;min-width: 3em; ">
+movie
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Honeymoon Killers
+</td>
+<td style="text-align:left;min-width: 18em; ">
+The Honeymoon Killers
+</td>
+<td style="text-align:left;min-width: 3em; ">
+FALSE
+</td>
+<td style="text-align:right;min-width: 3em; ">
+1970
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 4em; ">
+107
+</td>
+<td style="text-align:left;min-width: 5em; ">
+Crime,Drama,Romance
+</td>
+<td style="text-align:right;min-width: 3em; ">
+7.0
+</td>
+<td style="text-align:right;min-width: 3em; ">
+4229
+</td>
+<td style="text-align:left;min-width: 45em; ">
+&lt;a href=’<a href="https://www.imdb.com/title/tt0064437/&#39;%3EThe" class="uri">https://www.imdb.com/title/tt0064437/'&gt;The</a> Honeymoon Killers&lt;/a&gt;
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Donald Volkman;Leonard Kastle
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Shirley Stoler; Tony Lo Bianc…
+</td>
+<td style="text-align:left;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Country:
+USA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+Budget:$150,000
+(estimated)
+</td>
+<td style="text-align:left;min-width: 28em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 25em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 18em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 3em; ">
+NA
+</td>
+<td style="text-align:left;min-width: 9em; ">
+USA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+1.5e+05
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 7em; ">
+NA
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+<td style="text-align:right;min-width: 10em; ">
+0
+</td>
+</tr>
+</tbody>
+</table>
 <div id="refs" class="references">
 <div id="ref-wiki:imdb">
 <p>Wikipedia contributors. 2020. “IMDb — Wikipedia, the Free Encyclopedia.” <a href="https://en.wikipedia.org/w/index.php?title=IMDb&amp;oldid=959154715">https://en.wikipedia.org/w/index.php?title=IMDb&amp;oldid=959154715</a>.</p>
