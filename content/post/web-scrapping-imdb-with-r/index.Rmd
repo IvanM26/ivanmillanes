@@ -11,7 +11,7 @@ tags:
   - rvest
   - parallel
 subtitle: ''
-summary: 'This is summary'
+summary: "In this post, I'll show how I used R to create a movies dataset. I worked with IMDb (Internet Movie Database) data files available for download and information gathered through web scrapping their site."
 authors: []
 lastmod: '2020-05-27T09:16:31-03:00'
 featured: no
@@ -646,7 +646,7 @@ movies %>%
   col_width(movies, directors, "18em") %>%
   col_width(movies, cast, "18em") %>%
   col_width(movies, metascore_raw, "3em") %>%
-  col_width(movies, country_raw, "18em") %>%
+  col_width(movies, country_raw, "20em") %>%
   col_width(movies, budget_raw, "18em") %>%
   col_width(movies, open_usa_raw, "28em") %>%
   col_width(movies, gross_usa_raw, "18em") %>%
@@ -810,7 +810,7 @@ movies %>%
   col_width(movies, directors, "18em") %>%
   col_width(movies, cast, "18em") %>%
   col_width(movies, metascore_raw, "3em") %>%
-  col_width(movies, country_raw, "18em") %>%
+  col_width(movies, country_raw, "20em") %>%
   col_width(movies, budget_raw, "18em") %>%
   col_width(movies, open_usa_raw, "28em") %>%
   col_width(movies, gross_usa_raw, "18em") %>%
@@ -827,3 +827,36 @@ movies %>%
   col_width(movies, nominated_oscar, "10em") %>%
   col_width(movies, oscars_nominations, "10em")
 ```
+
+# Subproducts
+
+With a few lines of codes, some useful datasets can be created.
+
+- List of different genres found in `movies`
+
+```{r}
+genres_list <- movies %>%
+   select(genres) %>%
+   separate_rows(genres, sep = ",") %>%
+   unique
+```
+
+- List of different directors found in `movies`
+
+```{r}
+director_list <- movies %>%
+  select(directors) %>%
+  separate_rows(directors, sep = ";") %>%
+  unique
+```
+
+- List of different actors and actresses found in `movies`
+
+```{r}
+cast_list <- movies %>%
+  select(cast) %>%
+  separate_rows(cast, sep = ";") %>%
+  unique
+```
+
+

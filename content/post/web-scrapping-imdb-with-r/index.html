@@ -11,7 +11,7 @@ tags:
   - rvest
   - parallel
 subtitle: ''
-summary: 'This is summary'
+summary: "In this post, I'll show how I used R to create a movies dataset. I worked with IMDb (Internet Movie Database) data files available for download and information gathered through web scrapping their site."
 authors: []
 lastmod: '2020-05-27T09:16:31-03:00'
 featured: no
@@ -1639,7 +1639,7 @@ movies &lt;- movies %&gt;%
   col_width(movies, directors, &quot;18em&quot;) %&gt;%
   col_width(movies, cast, &quot;18em&quot;) %&gt;%
   col_width(movies, metascore_raw, &quot;3em&quot;) %&gt;%
-  col_width(movies, country_raw, &quot;18em&quot;) %&gt;%
+  col_width(movies, country_raw, &quot;20em&quot;) %&gt;%
   col_width(movies, budget_raw, &quot;18em&quot;) %&gt;%
   col_width(movies, open_usa_raw, &quot;28em&quot;) %&gt;%
   col_width(movies, gross_usa_raw, &quot;18em&quot;) %&gt;%
@@ -1760,7 +1760,7 @@ Meg Ryan; Hugh Jackman; Liev …
 <td style="text-align:left;min-width: 3em; ">
 44
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 USA
 </td>
@@ -1830,7 +1830,7 @@ Stéphane Audran; Jean Yanne; …
 <td style="text-align:left;min-width: 3em; ">
 NA
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 France
 |
@@ -1900,7 +1900,7 @@ Michel Piccoli; Romy Schneide…
 <td style="text-align:left;min-width: 3em; ">
 NA
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 Switzerland
 |
@@ -1970,7 +1970,7 @@ Eric Braeden; Susan Clark; Go…
 <td style="text-align:left;min-width: 3em; ">
 NA
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 USA
 </td>
@@ -2036,7 +2036,7 @@ Jean-Pierre Cargol; François …
 <td style="text-align:left;min-width: 3em; ">
 94
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 France
 </td>
@@ -2103,7 +2103,7 @@ Shirley Stoler; Tony Lo Bianc…
 <td style="text-align:left;min-width: 3em; ">
 NA
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 USA
 </td>
@@ -2258,7 +2258,7 @@ movies &lt;- movies %&gt;%
   col_width(movies, directors, &quot;18em&quot;) %&gt;%
   col_width(movies, cast, &quot;18em&quot;) %&gt;%
   col_width(movies, metascore_raw, &quot;3em&quot;) %&gt;%
-  col_width(movies, country_raw, &quot;18em&quot;) %&gt;%
+  col_width(movies, country_raw, &quot;20em&quot;) %&gt;%
   col_width(movies, budget_raw, &quot;18em&quot;) %&gt;%
   col_width(movies, open_usa_raw, &quot;28em&quot;) %&gt;%
   col_width(movies, gross_usa_raw, &quot;18em&quot;) %&gt;%
@@ -2419,7 +2419,7 @@ Meg Ryan; Hugh Jackman; Liev …
 <td style="text-align:left;min-width: 3em; ">
 44
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 USA
 </td>
@@ -2519,7 +2519,7 @@ Stéphane Audran; Jean Yanne; …
 <td style="text-align:left;min-width: 3em; ">
 NA
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 France
 |
@@ -2619,7 +2619,7 @@ Michel Piccoli; Romy Schneide…
 <td style="text-align:left;min-width: 3em; ">
 NA
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 Switzerland
 |
@@ -2719,7 +2719,7 @@ Eric Braeden; Susan Clark; Go…
 <td style="text-align:left;min-width: 3em; ">
 NA
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 USA
 </td>
@@ -2815,7 +2815,7 @@ Jean-Pierre Cargol; François …
 <td style="text-align:left;min-width: 3em; ">
 94
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 France
 </td>
@@ -2912,7 +2912,7 @@ Shirley Stoler; Tony Lo Bianc…
 <td style="text-align:left;min-width: 3em; ">
 NA
 </td>
-<td style="text-align:left;min-width: 18em; ">
+<td style="text-align:left;min-width: 20em; ">
 Country:
 USA
 </td>
@@ -2965,10 +2965,35 @@ NA
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+<div id="subproducts" class="section level1">
+<h1>Subproducts</h1>
+<p>With a few lines of codes, some useful datasets can be created.</p>
+<ul>
+<li>List of different genres found in <code>movies</code></li>
+</ul>
+<pre class="r"><code>genres_list &lt;- movies %&gt;%
+   select(genres) %&gt;%
+   separate_rows(genres, sep = &quot;,&quot;) %&gt;%
+   unique</code></pre>
+<ul>
+<li>List of different directors found in <code>movies</code></li>
+</ul>
+<pre class="r"><code>director_list &lt;- movies %&gt;%
+  select(directors) %&gt;%
+  separate_rows(directors, sep = &quot;;&quot;) %&gt;%
+  unique</code></pre>
+<ul>
+<li>List of different actors and actresses found in <code>movies</code></li>
+</ul>
+<pre class="r"><code>cast_list &lt;- movies %&gt;%
+  select(cast) %&gt;%
+  separate_rows(cast, sep = &quot;;&quot;) %&gt;%
+  unique</code></pre>
 <div id="refs" class="references">
 <div id="ref-wiki:imdb">
 <p>Wikipedia contributors. 2020. “IMDb — Wikipedia, the Free Encyclopedia.” <a href="https://en.wikipedia.org/w/index.php?title=IMDb&amp;oldid=959154715">https://en.wikipedia.org/w/index.php?title=IMDb&amp;oldid=959154715</a>.</p>
-</div>
 </div>
 </div>
 </div>
