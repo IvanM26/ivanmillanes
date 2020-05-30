@@ -23,21 +23,7 @@ projects: []
 bibliography: bibliography.bib
 ---
 
-In this post, I'll show how I used R to create a movies dataset. I worked with [IMDb (Internet Movie Database)](https://www.imdb.com/) data files [available for download](https://datasets.imdbws.com/) and information gathered through web scrapping their site.
-
-# Before we start...
-
-English is not my first language, and after writing this post someone told me that what I did was scra**p**ing, not scra**pp**ing. And that you scra**pe** something, not scra**p**. More info [here](https://stackoverflow.com/questions/42842324/scraping-vs-scrapping-is-there-a-difference).
-
-Since some code chunks take a lot of time to run (specially the ones where I **scrape**), I had them cached, but changing objects names would mean run everything again and waste a lot of time, so I decided to write this in the beggining of the post.
-
-This means that:
-
-- when I say scrapping, I mean scraping
-- when I say scrapped, I mean scraped
-- when I say scrap, I mean scrape
-
-Hope you enjoy the post!
+In this post, I'll show how I used R to create a movies dataset. I worked with [IMDb (Internet Movie Database)](https://www.imdb.com/) data files [available for download](https://datasets.imdbws.com/) and information gathered through web scraping their site.
 
 # Load Packages
 
@@ -450,7 +436,7 @@ movies %>%
 
 So far so good. We used the downloaded files to create a `movies` dataset with a lot of information about movies with certain characteristics. But what if we want even **more** information?
 
-## Web scrapping IMDb
+## Web scraping IMDb
 
 If we take a look at any movie website in IMDb (for example, [this one](https://www.imdb.com/title/tt0468569/)), we see that there is a lot more information related to that movie. I'm particularly interested in the following:
 
@@ -463,11 +449,12 @@ If we take a look at any movie website in IMDb (for example, [this one](https://
 - Awards information
 - Full cast
 
-How can we add that information to our dataset? Now is when *web scrapping* joins the party. I'll use the `rvest` package to extract the information mentioned above for each movie (when available). Also, as we have to do this for `r nrow(movies)` movies, I'll be using the `parallel` package to speed up the work. Even with this approach, the code took around one hour and a half to run.
+How can we add that information to our dataset? Now is when *web scraping* joins the party. I'll use the `rvest` package to extract the information mentioned above for each movie (when available). Also, as we have to do this for `r nrow(movies)` movies, I'll be using the `parallel` package to speed up the work. Even with this approach, the code took around one hour and a half to run.
 
-The following code creates an object named `scrapping` that contains the information we want for each movie. Some preprocessing is going to be necessary before adding new columns to `movies`, but I'll talk about it later.
+The following code creates an object named `scraping` that contains the information we want for each movie. Some preprocessing is going to be necessary before adding new columns to `movies`, but I'll talk about it later.
 
 ### Details
+
 I had to retrieve information for a lot of movies, and look for it in two different websites (because full cast data wasn't in the same title page as the other information). For that reason, I decided to run my code in `parallel`.
 
 The first part of the code sets up clusters to run the work in parallel. I defined the number of cores to be used equal to the number of cores in my computer (it has eight cores) minus one, because that's what is recommended. So I created seven clusters. Remember to stop the clusters when you finish the work.
@@ -476,16 +463,16 @@ I load the necessary libraries to run the code in each cluster by using the `clu
 
 Then we have the extraction function itself. The difference is that instead of using `apply`, we use `parLapply`. 
 
-The object `scrapping` consists of a list of elements with length equal to the number of movies scrapped, and each element of this list is a list of elements (the returned `my_list` object for each movie).
+The object `scraping` consists of a list of elements with length equal to the number of movies scraped, and each element of this list is a list of elements (the returned `my_list` object for each movie).
 
-The scrapping part is somewhat straightforward. We read the html, we select nodes and extract the text.
+The scraping part is somewhat straightforward. We read the html, we select nodes and extract the text.
 
-There is one final consideration regarding the scrapping of box office information. Based on how the information is structured on IMDb, in this step I extracted more data than necessary. For each movie, the `scrap_boxOffice` object is a character vector whose length may vary from movie to movie (because not all movies have all data available) and each element of that vector contains different data. I'll manage to keep the information I want and assign it to the corresponding vector in the next section.
+There is one final consideration regarding the scraping of box office information. Based on how the information is structured on IMDb, in this step I extracted more data than necessary. For each movie, the `scrap_boxOffice` object is a character vector whose length may vary from movie to movie (because not all movies have all data available) and each element of that vector contains different data. I'll manage to keep the information I want and assign it to the corresponding vector in the next section.
 
 Even though I tried to be as clear as possible, this might be a little confusing, but I hope that by inspecting the code you'll get what is doing!
 
-```{r scrapping, cache=TRUE}
-# Web scrapping more information about movies
+```{r scraping, cache=TRUE}
+# Web scraping more information about movies
 
 # Set the cluster to work in parallel
 n_cores <- detectCores() - 1
@@ -502,23 +489,23 @@ junk <- clusterEvalQ(clust, {
   library(rvest)
 })
 
-# Create scrapping object by running a parallel apply
-scrapping <- parLapply(clust, movies$tconst, function(x){
+# Create scraping object by running a parallel apply
+scraping <- parLapply(clust, movies$tconst, function(x){
   
   # Read title page
   title_page <- read_html(str_c("https://www.imdb.com/title/", x)) 
   
-  # Scrap metascore
+  # Scrape metascore
   scrap_metascore <- title_page %>%
     html_nodes(".metacriticScore span") %>%
     html_text
   
-  # Scrap box office (and country)
+  # Scrape box office (and country)
   scrap_boxOffice <- title_page %>%
     html_nodes(".txt-block") %>%
     html_text
   
-  # Scrap awards
+  # Scrape awards
   scrap_awards <- title_page %>%
     html_nodes(".awards-blurb b") %>%
     html_text
@@ -529,7 +516,7 @@ scrapping <- parLapply(clust, movies$tconst, function(x){
     str_c("https://www.imdb.com/title/", x, "/fullcredits?ref_=tt_cl_sm#cast")
     )
   
-  # Scrap cast
+  # Scrape cast
   scrap_cast <- cast_page %>%
     html_nodes(".primary_photo+ td a") %>%
     html_text %>%
@@ -550,19 +537,19 @@ stopCluster(clust)
 
 ## Vector Assignment 
 
-The following code uses the `scrapping` object to create the vectors of data that will be used to add columns to `movies`.
+The following code uses the `scraping` object to create the vectors of data that will be used to add columns to `movies`.
 
 ### Details
 
 This is what the code does:
 
 - Preallocates the corresponding vectors
-- Creates `no_lenght_zero` function to solve an issue realted to how data is scrapped when there is no information
+- Creates `no_lenght_zero` function to solve an issue realted to how data is scraped when there is no information
 - Fills preallocated vectors
 
 `boxOffice_list` is a character vector where each element refers to a different type of data. It is somewhat structured though, so I used a combination of `keep` and `str_detect` functions to assign each target data to the corresponding vector.
 
-```{r scrapping-vectors, cache=TRUE}
+```{r scraping-vectors, cache=TRUE}
 # Number of movies
 n_movies <- nrow(movies)
 
@@ -585,15 +572,15 @@ no_lenght_zero <- function(x){
 }
 
 # Assign extracted info
-for (i in seq_along(scrapping)){
+for (i in seq_along(scraping)){
   
-  scrap_cast[[i]] <- scrapping[[i]][["scrap_cast"]] %>%
+  scrap_cast[[i]] <- scraping[[i]][["scrap_cast"]] %>%
     no_lenght_zero
   
-  scrap_metascore[[i]] <- scrapping[[i]][["scrap_metascore"]] %>%
+  scrap_metascore[[i]] <- scraping[[i]][["scrap_metascore"]] %>%
     no_lenght_zero
   
-  boxOffice_list <- scrapping[[i]][["scrap_boxOffice"]]
+  boxOffice_list <- scraping[[i]][["scrap_boxOffice"]]
   
   scrap_country[[i]] <- boxOffice_list %>%
     keep(~ str_detect(.x, "Country:")) %>%
@@ -611,7 +598,7 @@ for (i in seq_along(scrapping)){
     keep(~ str_detect(.x, "Cumulative Worldwide Gross:")) %>%
     no_lenght_zero
   
-  scrap_awards[[i]] <- scrapping[[i]][["scrap_awards"]] %>%
+  scrap_awards[[i]] <- scraping[[i]][["scrap_awards"]] %>%
     no_lenght_zero
 }
 ```
@@ -620,8 +607,8 @@ for (i in seq_along(scrapping)){
 
 Finally, we can use `mutate` to add the new columns to `movies`.
 
-```{r scrapping-addcols}
-# Add scrapped columns to data
+```{r scraping-addcols}
+# Add scraped columns to data
 movies <- movies %>%
   mutate(cast = scrap_cast,
          metascore_raw = scrap_metascore,
@@ -635,7 +622,7 @@ movies <- movies %>%
 
 This is how `movies` looks like in the end of Part II. 
 
-Obs: I have taken the first 30 characters of cast to make the table look better.
+Obs: I have taken the first 30 characters of `cast` and replace the rest with `...` to make the table look better.
 
 ```{r}
 movies %>%
@@ -763,7 +750,7 @@ For movies that **didn't win an Oscar**:
 - `nominated_oscar`, an indicator variable that takes the value 1 if the movie was nominated for any Oscar and 0 otherwise
 - `oscars_nominations`, the number of Oscar nominations
 
-Obs: If a movie won at least one Oscar, we don't know how many nominations it had. This has to do with the way I scrapped this data.
+Obs: If a movie won at least one Oscar, we don't know how many nominations it had. This has to do with the way I scraped this data.
 
 ```{r}
 movies <- movies %>%
@@ -799,7 +786,9 @@ movies <- movies %>%
 )
 ```
 
-The final dataset looks like this. I kept the raw columns for you to see the differences with the cleaned ones. 
+The final dataset looks like this. I kept the raw columns for you to see the differences with the cleaned ones.
+
+Obs: I have taken the first 30 characters of `cast` and replace the rest with `...` to make the table look better.
 
 ```{r}
 movies %>%
@@ -848,28 +837,47 @@ With a few lines of codes, some useful datasets can be created.
 - List of different genres found in `movies`
 
 ```{r}
-genres_list <- movies %>%
-   select(genres) %>%
-   separate_rows(genres, sep = ",") %>%
-   unique
+list_genres <- movies %>%
+  select(genres) %>%
+  separate_rows(genres, sep = ",") %>%
+  unique %>%
+  arrange(genres)
 ```
 
-- List of different directors found in `movies`
+- List of different directors found in `movies`, sorted by name
 
 ```{r}
-director_list <- movies %>%
+list_directors <- movies %>%
   select(directors) %>%
   separate_rows(directors, sep = ";") %>%
-  unique
+  unique %>%
+  arrange(directors)
 ```
 
-- List of different actors and actresses found in `movies`
+- List of different actors and actresses found in `movies`, sorted by name
 
 ```{r}
-cast_list <- movies %>%
+list_cast <- movies %>%
   select(cast) %>%
   separate_rows(cast, sep = ";") %>%
-  unique
+  unique %>%
+  arrange(cast)
 ```
 
+# Save Datasets
+
+Finally, I'll save the `movies` dataset and the subproducts `list_genres`, `list_directors` and `list_cast` in a folder named `datasets`.
+
+```{r}
+# Create "datasets" folder if does not exist
+if (!file.exists("datasets")) {
+  dir.create("datasets")
+}
+
+# Save files
+saveRDS(movies, "datasets/movies.rds")
+saveRDS(list_genres, "datasets/list_genres.rds")
+saveRDS(list_directors, "datasets/list_directors.rds")
+saveRDS(list_cast, "datasets/list_cast.rds")
+```
 

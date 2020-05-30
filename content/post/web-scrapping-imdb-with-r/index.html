@@ -26,19 +26,7 @@ bibliography: bibliography.bib
 <script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
 
 
-<p>In this post, I’ll show how I used R to create a movies dataset. I worked with <a href="https://www.imdb.com/">IMDb (Internet Movie Database)</a> data files <a href="https://datasets.imdbws.com/">available for download</a> and information gathered through web scrapping their site.</p>
-<div id="before-we-start" class="section level1">
-<h1>Before we start…</h1>
-<p>English is not my first language, and after writing this post someone told me that what I did was scra<strong>p</strong>ing, not scra<strong>pp</strong>ing. And that you scra<strong>pe</strong> something, not scra<strong>p</strong>. More info <a href="https://stackoverflow.com/questions/42842324/scraping-vs-scrapping-is-there-a-difference">here</a>.</p>
-<p>Since some code chunks take a lot of time to run (specially the ones where I <strong>scrape</strong>), I had them cached, but changing objects names would mean run everything again and waste a lot of time, so I decided to write this in the beggining of the post.</p>
-<p>This means that:</p>
-<ul>
-<li>when I say scrapping, I mean scraping</li>
-<li>when I say scrapped, I mean scraped</li>
-<li>when I say scrap, I mean scrape</li>
-</ul>
-<p>Hope you enjoy the post!</p>
-</div>
+<p>In this post, I’ll show how I used R to create a movies dataset. I worked with <a href="https://www.imdb.com/">IMDb (Internet Movie Database)</a> data files <a href="https://datasets.imdbws.com/">available for download</a> and information gathered through web scraping their site.</p>
 <div id="load-packages" class="section level1">
 <h1>Load Packages</h1>
 <p>The following packages need to be installed and loaded in order to run the code written in this post.</p>
@@ -1462,8 +1450,8 @@ Donald Volkman;Leonard Kastle
 <div id="movies-dataset---part-ii" class="section level1">
 <h1>Movies Dataset - Part II</h1>
 <p>So far so good. We used the downloaded files to create a <code>movies</code> dataset with a lot of information about movies with certain characteristics. But what if we want even <strong>more</strong> information?</p>
-<div id="web-scrapping-imdb" class="section level2">
-<h2>Web scrapping IMDb</h2>
+<div id="web-scraping-imdb" class="section level2">
+<h2>Web scraping IMDb</h2>
 <p>If we take a look at any movie website in IMDb (for example, <a href="https://www.imdb.com/title/tt0468569/">this one</a>), we see that there is a lot more information related to that movie. I’m particularly interested in the following:</p>
 <ul>
 <li><a href="https://www.imdb.com/list/ls051211184/">Metascore</a></li>
@@ -1475,19 +1463,19 @@ Donald Volkman;Leonard Kastle
 <li>Awards information</li>
 <li>Full cast</li>
 </ul>
-<p>How can we add that information to our dataset? Now is when <em>web scrapping</em> joins the party. I’ll use the <code>rvest</code> package to extract the information mentioned above for each movie (when available). Also, as we have to do this for 16191 movies, I’ll be using the <code>parallel</code> package to speed up the work. Even with this approach, the code took around one hour and a half to run.</p>
-<p>The following code creates an object named <code>scrapping</code> that contains the information we want for each movie. Some preprocessing is going to be necessary before adding new columns to <code>movies</code>, but I’ll talk about it later.</p>
+<p>How can we add that information to our dataset? Now is when <em>web scraping</em> joins the party. I’ll use the <code>rvest</code> package to extract the information mentioned above for each movie (when available). Also, as we have to do this for 16191 movies, I’ll be using the <code>parallel</code> package to speed up the work. Even with this approach, the code took around one hour and a half to run.</p>
+<p>The following code creates an object named <code>scraping</code> that contains the information we want for each movie. Some preprocessing is going to be necessary before adding new columns to <code>movies</code>, but I’ll talk about it later.</p>
 <div id="details-3" class="section level3">
 <h3>Details</h3>
 <p>I had to retrieve information for a lot of movies, and look for it in two different websites (because full cast data wasn’t in the same title page as the other information). For that reason, I decided to run my code in <code>parallel</code>.</p>
 <p>The first part of the code sets up clusters to run the work in parallel. I defined the number of cores to be used equal to the number of cores in my computer (it has eight cores) minus one, because that’s what is recommended. So I created seven clusters. Remember to stop the clusters when you finish the work.</p>
 <p>I load the necessary libraries to run the code in each cluster by using the <code>clusterEvalQ</code> function. I assigned the result of that function to <code>junk</code> to prevent the print of some output.</p>
 <p>Then we have the extraction function itself. The difference is that instead of using <code>apply</code>, we use <code>parLapply</code>.</p>
-<p>The object <code>scrapping</code> consists of a list of elements with length equal to the number of movies scrapped, and each element of this list is a list of elements (the returned <code>my_list</code> object for each movie).</p>
-<p>The scrapping part is somewhat straightforward. We read the html, we select nodes and extract the text.</p>
-<p>There is one final consideration regarding the scrapping of box office information. Based on how the information is structured on IMDb, in this step I extracted more data than necessary. For each movie, the <code>scrap_boxOffice</code> object is a character vector whose length may vary from movie to movie (because not all movies have all data available) and each element of that vector contains different data. I’ll manage to keep the information I want and assign it to the corresponding vector in the next section.</p>
+<p>The object <code>scraping</code> consists of a list of elements with length equal to the number of movies scraped, and each element of this list is a list of elements (the returned <code>my_list</code> object for each movie).</p>
+<p>The scraping part is somewhat straightforward. We read the html, we select nodes and extract the text.</p>
+<p>There is one final consideration regarding the scraping of box office information. Based on how the information is structured on IMDb, in this step I extracted more data than necessary. For each movie, the <code>scrap_boxOffice</code> object is a character vector whose length may vary from movie to movie (because not all movies have all data available) and each element of that vector contains different data. I’ll manage to keep the information I want and assign it to the corresponding vector in the next section.</p>
 <p>Even though I tried to be as clear as possible, this might be a little confusing, but I hope that by inspecting the code you’ll get what is doing!</p>
-<pre class="r"><code># Web scrapping more information about movies
+<pre class="r"><code># Web scraping more information about movies
 
 # Set the cluster to work in parallel
 n_cores &lt;- detectCores() - 1
@@ -1504,23 +1492,23 @@ junk &lt;- clusterEvalQ(clust, {
   library(rvest)
 })
 
-# Create scrapping object by running a parallel apply
-scrapping &lt;- parLapply(clust, movies$tconst, function(x){
+# Create scraping object by running a parallel apply
+scraping &lt;- parLapply(clust, movies$tconst, function(x){
   
   # Read title page
   title_page &lt;- read_html(str_c(&quot;https://www.imdb.com/title/&quot;, x)) 
   
-  # Scrap metascore
+  # Scrape metascore
   scrap_metascore &lt;- title_page %&gt;%
     html_nodes(&quot;.metacriticScore span&quot;) %&gt;%
     html_text
   
-  # Scrap box office (and country)
+  # Scrape box office (and country)
   scrap_boxOffice &lt;- title_page %&gt;%
     html_nodes(&quot;.txt-block&quot;) %&gt;%
     html_text
   
-  # Scrap awards
+  # Scrape awards
   scrap_awards &lt;- title_page %&gt;%
     html_nodes(&quot;.awards-blurb b&quot;) %&gt;%
     html_text
@@ -1531,7 +1519,7 @@ scrapping &lt;- parLapply(clust, movies$tconst, function(x){
     str_c(&quot;https://www.imdb.com/title/&quot;, x, &quot;/fullcredits?ref_=tt_cl_sm#cast&quot;)
     )
   
-  # Scrap cast
+  # Scrape cast
   scrap_cast &lt;- cast_page %&gt;%
     html_nodes(&quot;.primary_photo+ td a&quot;) %&gt;%
     html_text %&gt;%
@@ -1552,13 +1540,13 @@ stopCluster(clust)</code></pre>
 </div>
 <div id="vector-assignment" class="section level2">
 <h2>Vector Assignment</h2>
-<p>The following code uses the <code>scrapping</code> object to create the vectors of data that will be used to add columns to <code>movies</code>.</p>
+<p>The following code uses the <code>scraping</code> object to create the vectors of data that will be used to add columns to <code>movies</code>.</p>
 <div id="details-4" class="section level3">
 <h3>Details</h3>
 <p>This is what the code does:</p>
 <ul>
 <li>Preallocates the corresponding vectors</li>
-<li>Creates <code>no_lenght_zero</code> function to solve an issue realted to how data is scrapped when there is no information</li>
+<li>Creates <code>no_lenght_zero</code> function to solve an issue realted to how data is scraped when there is no information</li>
 <li>Fills preallocated vectors</li>
 </ul>
 <p><code>boxOffice_list</code> is a character vector where each element refers to a different type of data. It is somewhat structured though, so I used a combination of <code>keep</code> and <code>str_detect</code> functions to assign each target data to the corresponding vector.</p>
@@ -1584,15 +1572,15 @@ no_lenght_zero &lt;- function(x){
 }
 
 # Assign extracted info
-for (i in seq_along(scrapping)){
+for (i in seq_along(scraping)){
   
-  scrap_cast[[i]] &lt;- scrapping[[i]][[&quot;scrap_cast&quot;]] %&gt;%
+  scrap_cast[[i]] &lt;- scraping[[i]][[&quot;scrap_cast&quot;]] %&gt;%
     no_lenght_zero
   
-  scrap_metascore[[i]] &lt;- scrapping[[i]][[&quot;scrap_metascore&quot;]] %&gt;%
+  scrap_metascore[[i]] &lt;- scraping[[i]][[&quot;scrap_metascore&quot;]] %&gt;%
     no_lenght_zero
   
-  boxOffice_list &lt;- scrapping[[i]][[&quot;scrap_boxOffice&quot;]]
+  boxOffice_list &lt;- scraping[[i]][[&quot;scrap_boxOffice&quot;]]
   
   scrap_country[[i]] &lt;- boxOffice_list %&gt;%
     keep(~ str_detect(.x, &quot;Country:&quot;)) %&gt;%
@@ -1610,7 +1598,7 @@ for (i in seq_along(scrapping)){
     keep(~ str_detect(.x, &quot;Cumulative Worldwide Gross:&quot;)) %&gt;%
     no_lenght_zero
   
-  scrap_awards[[i]] &lt;- scrapping[[i]][[&quot;scrap_awards&quot;]] %&gt;%
+  scrap_awards[[i]] &lt;- scraping[[i]][[&quot;scrap_awards&quot;]] %&gt;%
     no_lenght_zero
 }</code></pre>
 </div>
@@ -1618,7 +1606,7 @@ for (i in seq_along(scrapping)){
 <div id="add-columns" class="section level2">
 <h2>Add columns</h2>
 <p>Finally, we can use <code>mutate</code> to add the new columns to <code>movies</code>.</p>
-<pre class="r"><code># Add scrapped columns to data
+<pre class="r"><code># Add scraped columns to data
 movies &lt;- movies %&gt;%
   mutate(cast = scrap_cast,
          metascore_raw = scrap_metascore,
@@ -1629,7 +1617,7 @@ movies &lt;- movies %&gt;%
          gross_world_raw = scrap_gross_world,
          awards_raw = scrap_awards)</code></pre>
 <p>This is how <code>movies</code> looks like in the end of Part II.</p>
-<p>Obs: I have taken the first 30 characters of cast to make the table look better.</p>
+<p>Obs: I have taken the first 30 characters of <code>cast</code> and replace the rest with <code>...</code> to make the table look better.</p>
 <pre class="r"><code>movies %&gt;%
   head %&gt;%
   mutate(cast = cast %&gt;%
@@ -2216,7 +2204,7 @@ movies &lt;- movies %&gt;%
 <li><code>nominated_oscar</code>, an indicator variable that takes the value 1 if the movie was nominated for any Oscar and 0 otherwise</li>
 <li><code>oscars_nominations</code>, the number of Oscar nominations</li>
 </ul>
-<p>Obs: If a movie won at least one Oscar, we don’t know how many nominations it had. This has to do with the way I scrapped this data.</p>
+<p>Obs: If a movie won at least one Oscar, we don’t know how many nominations it had. This has to do with the way I scraped this data.</p>
 <pre class="r"><code>movies &lt;- movies %&gt;%
   mutate(
     
@@ -2249,6 +2237,7 @@ movies &lt;- movies %&gt;%
     )
 )</code></pre>
 <p>The final dataset looks like this. I kept the raw columns for you to see the differences with the cleaned ones.</p>
+<p>Obs: I have taken the first 30 characters of <code>cast</code> and replace the rest with <code>...</code> to make the table look better.</p>
 <pre class="r"><code>movies %&gt;%
   head %&gt;%
   mutate(cast = cast %&gt;%
@@ -2985,24 +2974,41 @@ NA
 <ul>
 <li>List of different genres found in <code>movies</code></li>
 </ul>
-<pre class="r"><code>genres_list &lt;- movies %&gt;%
-   select(genres) %&gt;%
-   separate_rows(genres, sep = &quot;,&quot;) %&gt;%
-   unique</code></pre>
+<pre class="r"><code>list_genres &lt;- movies %&gt;%
+  select(genres) %&gt;%
+  separate_rows(genres, sep = &quot;,&quot;) %&gt;%
+  unique %&gt;%
+  arrange(genres)</code></pre>
 <ul>
-<li>List of different directors found in <code>movies</code></li>
+<li>List of different directors found in <code>movies</code>, sorted by name</li>
 </ul>
-<pre class="r"><code>director_list &lt;- movies %&gt;%
+<pre class="r"><code>list_directors &lt;- movies %&gt;%
   select(directors) %&gt;%
   separate_rows(directors, sep = &quot;;&quot;) %&gt;%
-  unique</code></pre>
+  unique %&gt;%
+  arrange(directors)</code></pre>
 <ul>
-<li>List of different actors and actresses found in <code>movies</code></li>
+<li>List of different actors and actresses found in <code>movies</code>, sorted by name</li>
 </ul>
-<pre class="r"><code>cast_list &lt;- movies %&gt;%
+<pre class="r"><code>list_cast &lt;- movies %&gt;%
   select(cast) %&gt;%
   separate_rows(cast, sep = &quot;;&quot;) %&gt;%
-  unique</code></pre>
+  unique %&gt;%
+  arrange(cast)</code></pre>
+</div>
+<div id="save-datasets" class="section level1">
+<h1>Save Datasets</h1>
+<p>Finally, I’ll save the <code>movies</code> dataset and the subproducts <code>list_genres</code>, <code>list_directors</code> and <code>list_cast</code> in a folder named <code>datasets</code>.</p>
+<pre class="r"><code># Create &quot;datasets&quot; folder if does not exist
+if (!file.exists(&quot;datasets&quot;)) {
+  dir.create(&quot;datasets&quot;)
+}
+
+# Save files
+saveRDS(movies, &quot;datasets/movies.rds&quot;)
+saveRDS(list_genres, &quot;datasets/list_genres.rds&quot;)
+saveRDS(list_directors, &quot;datasets/list_directors.rds&quot;)
+saveRDS(list_cast, &quot;datasets/list_cast.rds&quot;)</code></pre>
 <div id="refs" class="references">
 <div id="ref-wiki:imdb">
 <p>Wikipedia contributors. 2020. “IMDb — Wikipedia, the Free Encyclopedia.” <a href="https://en.wikipedia.org/w/index.php?title=IMDb&amp;oldid=959154715">https://en.wikipedia.org/w/index.php?title=IMDb&amp;oldid=959154715</a>.</p>
