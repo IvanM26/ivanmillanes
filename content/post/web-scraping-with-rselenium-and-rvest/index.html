@@ -1,0 +1,61 @@
+---
+title: Webscraping with RSelenium and rvest
+author: Ivan Millanes
+date: '2020-06-30'
+slug: webscraping-with-rselenium-and-rvest
+categories: []
+tags:
+  - R
+  - rvest
+  - RSelenium
+  - tidyverse
+  - parallel
+  - webscraping
+subtitle: ''
+summary: "In this post I show how to scrape Dynamic Web Pages using RSelenium and rvest."
+authors: []
+lastmod: '2020-06-30T19:22:14-03:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+<div id="resources" class="section level1">
+<h1>Resources</h1>
+<p>The following list contains different videos, posts and StackOverflow posts that I found useful when learning and working with RSelenium.</p>
+<ul>
+<li><p><strong>The ultimate online collection toolbox: Combining RSelenium and Rvest</strong> ( <a href="https://www.youtube.com/watch?v=OxbvFiYxEzI&amp;t">Part I</a> and <a href="https://www.youtube.com/watch?v=JcIeWiljQG4">Part II</a> ). If you know about <code>rvest</code> and just want to learn about <code>RSelenium</code>, I’d recommend watching Part II. It gives an overview of what you can do when combining <code>RSelenium</code> and <code>rvest</code>. It has nice an practical examples. As a final comment regarding these videos, I would’t pay too much attention to setting up Docker because at least I didn’t need to work that way in order to get <code>RSelenium</code> going. In fact, at least now, getting it going is pretty straightforward.</p></li>
+<li><p><a href="http://thatdatatho.com/2019/01/22/tutorial-web-scraping-rselenium/">RSelenium Tutorial: A Tutorial to Basic Web Scraping With RSelenium</a>. I found this post really useful when trying to set up <code>RSelenium</code>. The solution given in <a href="https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7/56173984#56173984">this</a> StackOverflow post, which is mentioned in the article, seems to be enough.</p></li>
+<li><p><a href="http://joshuamccrain.com/tutorials/web_scraping_R_selenium.html">RSelenium Tutorial</a>. This post might be helpful too.</p></li>
+<li><p><a href="https://docs.ropensci.org/RSelenium/">RSelenium Package Website</a>. It has more advanced and detailed content. I just took a look to the <a href="https://docs.ropensci.org/RSelenium/articles/basics.html">Basics</a> Vignette.</p></li>
+<li><p>These StackOverflow posts helped me when <strong>working with dropdown lists</strong>:</p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/39949809/rselenium-how-to-scrape-all-drop-down-list-option-values">Rselenium - How to scrape all drop down list option values</a></li>
+<li><a href="https://stackoverflow.com/questions/26963927/dropdown-boxes-in-rselenium">dropdown boxes in RSelenium</a></li>
+</ul></li>
+<li><p><a href="https://stackoverflow.com/questions/43991498/rselenium-server-signals-port-is-already-in-use">RSelenium: server signals port is already in use</a>. This post gives a solution to the “port already in use” problem. Even though is not marked as best, the last line of code of the second answer is useful.</p></li>
+<li><p><a href="https://stackoverflow.com/questions/50310595/data-scraping-in-r">Data Scraping in R</a>. Thanks to this post I found the <a href="https://www.premierleague.com/stats/top/players/goals">Premier League Stats</a> website, which was exactly was I was looking for to write a post about <code>RSelenium</code>. Also, I took some hints from the answer marked as best.</p></li>
+</ul>
+</div>
+<div id="key-concepts" class="section level1">
+<h1>Key concepts</h1>
+<div id="static-vs-dynamic-web-pages" class="section level2">
+<h2>Static vs Dynamic Web Pages</h2>
+<p>Let’s compare the following websites:
+- <a href="https://www.imdb.com/">IMDb (Internet Movie Database)</a>
+- <a href="https://www.premierleague.com/stats/top/players/goals">Premier League Stats</a></p>
+<p>On <a href="https://www.imdb.com/">IMDb</a>, if you search for a particular movie (for example, <a href="https://www.imdb.com/title/tt0468569/">this one</a>), you can see that the URL changes, and that URL is different from any other movie (for example, <a href="https://www.imdb.com/title/tt2397535/">this one</a>). The same behavior is shown if you search for different actors.</p>
+<p>On the other hand, if you go to <a href="https://www.premierleague.com/stats/top/players/goals">Premier League Stats</a>, you will notice that modifying the filters or clicking the pagination button to access more data doesn’t produce changes on the URL.</p>
+<p>As I understand it, the first website is an example of a <strong>static</strong> web page, while the second one is an example of a <strong>dynamic</strong> webpage.</p>
+<p>The following definitions where taken from <a href="https://www.pcmag.com/" class="uri">https://www.pcmag.com/</a>.</p>
+<ul>
+<li><p><a href="https://www.pcmag.com/encyclopedia/term/static-web-page">Static Web Page</a>: A Web page (HTML page) that contains the same information for all users. Although it may be periodically updated from time to time, it does not change with each user retrieval.</p></li>
+<li><p><a href="https://www.pcmag.com/encyclopedia/term/dynamic-web-page">Dynamic Web Page</a>: A Web page that provides custom content for the user based on the results of a search or some other request. Also known as “dynamic HTML” or “dynamic content”, the “dynamic” term is used when referring to interactive Web pages created for each user.</p></li>
+</ul>
+</div>
+</div>

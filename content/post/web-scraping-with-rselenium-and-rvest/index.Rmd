@@ -1,0 +1,72 @@
+---
+title: Webscraping with RSelenium and rvest
+author: Ivan Millanes
+date: '2020-06-30'
+slug: webscraping-with-rselenium-and-rvest
+categories: []
+tags:
+  - R
+  - rvest
+  - RSelenium
+  - tidyverse
+  - parallel
+  - webscraping
+subtitle: ''
+summary: "In this post I show how to scrape Dynamic Web Pages using RSelenium and rvest."
+authors: []
+lastmod: '2020-06-30T19:22:14-03:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+# Resources
+
+The following list contains different videos, posts and StackOverflow posts that I found useful when learning and working with RSelenium.
+
+- **The ultimate online collection toolbox: Combining RSelenium and Rvest** ( [Part I](https://www.youtube.com/watch?v=OxbvFiYxEzI&t)  and [Part II](https://www.youtube.com/watch?v=JcIeWiljQG4) ). If you know about `rvest` and just want to learn about `RSelenium`, I'd recommend watching Part II. It gives an overview of what you can do when combining `RSelenium` and `rvest`. It has nice an practical examples. As a final comment regarding these videos, I would't pay too much attention to setting up Docker because at least I didn't need to work that way in order to get `RSelenium` going. In fact, at least now, getting it going is pretty straightforward.
+
+- [RSelenium Tutorial: A Tutorial to Basic Web Scraping With RSelenium](http://thatdatatho.com/2019/01/22/tutorial-web-scraping-rselenium/). I found this post really useful when trying to set up `RSelenium`. The solution given in [this](https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7/56173984#56173984) StackOverflow post, which is mentioned in the article, seems to be enough.
+
+- [RSelenium Tutorial](http://joshuamccrain.com/tutorials/web_scraping_R_selenium.html). This post might be helpful too.
+
+- [RSelenium Package Website](https://docs.ropensci.org/RSelenium/). It has more advanced and detailed content. I just took a look to the [Basics](https://docs.ropensci.org/RSelenium/articles/basics.html) Vignette.
+
+- These StackOverflow posts helped me when **working with dropdown lists**:
+
+    - [Rselenium - How to scrape all drop down list option values](https://stackoverflow.com/questions/39949809/rselenium-how-to-scrape-all-drop-down-list-option-values)
+    - [dropdown boxes in RSelenium](https://stackoverflow.com/questions/26963927/dropdown-boxes-in-rselenium)
+
+- [RSelenium: server signals port is already in use](https://stackoverflow.com/questions/43991498/rselenium-server-signals-port-is-already-in-use). This post gives a solution to the "port already in use" problem. Even though is not marked as best, the last line of code of the second answer is useful.
+
+- [Data Scraping in R](https://stackoverflow.com/questions/50310595/data-scraping-in-r). Thanks to this post I found the [Premier League Stats](https://www.premierleague.com/stats/top/players/goals) website, which was exactly was I was looking for to write a post about `RSelenium`. Also, I took some hints from the answer marked as best.
+
+# Key concepts
+
+## Static vs Dynamic Web Pages
+
+Let's compare the following websites:
+- [IMDb (Internet Movie Database)](https://www.imdb.com/) 
+- [Premier League Stats](https://www.premierleague.com/stats/top/players/goals)
+
+On [IMDb](https://www.imdb.com/), if you search for a particular movie (for example, [this one](https://www.imdb.com/title/tt0468569/)), you can see that the URL changes, and that URL is different from any other movie (for example, [this one](https://www.imdb.com/title/tt2397535/)). The same behavior is shown if you search for different actors.
+
+On the other hand, if you go to [Premier League Stats](https://www.premierleague.com/stats/top/players/goals), you will notice that modifying the filters or clicking the pagination button to access more data doesn't produce changes on the URL.
+
+As I understand it, the first website is an example of a **static** web page, while the second one is an example of a **dynamic** webpage.
+
+The following definitions where taken from https://www.pcmag.com/.
+
+- [Static Web Page](https://www.pcmag.com/encyclopedia/term/static-web-page): A Web page (HTML page) that contains the same information for all users. Although it may be periodically updated from time to time, it does not change with each user retrieval.
+
+- [Dynamic Web Page](https://www.pcmag.com/encyclopedia/term/dynamic-web-page): A Web page that provides custom content for the user based on the results of a search or some other request. Also known as "dynamic HTML" or "dynamic content", the "dynamic" term is used when referring to interactive Web pages created for each user.
+
+
+
+
+
+
+
