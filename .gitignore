@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 public/
+content/post/web-scrapping-imdb-with-r/data/
+content/post/web-scrapping-imdb-with-r/datasets/
+blogdown/post/web-scrapping-imdb-with-r/index_cache/html
