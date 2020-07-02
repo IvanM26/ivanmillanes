@@ -713,6 +713,8 @@ The following list contains different videos, posts and StackOverflow posts that
 
 - [RSelenium Tutorial: A Tutorial to Basic Web Scraping With RSelenium](http://thatdatatho.com/2019/01/22/tutorial-web-scraping-rselenium/). I found this post really useful when trying to set up `RSelenium`. The solution given in [this](https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7/56173984#56173984) StackOverflow post, which is mentioned in the article, seems to be enough.
 
+- [Dungeons and Dragons Web Scraping with rvest and RSelenium](https://lmyint.github.io/post/dnd-scraping-rvest-rselenium/). This is a great post! It starts with a general tutorial for scraping with `rvest` and then dives into `RSelenium`. If you are not familiar with `rvest`, you can start here.
+
 - [RSelenium Tutorial](http://joshuamccrain.com/tutorials/web_scraping_R_selenium.html). This post might be helpful too.
 
 - [RSelenium Package Website](https://docs.ropensci.org/RSelenium/). It has more advanced and detailed content. I just took a look to the [Basics](https://docs.ropensci.org/RSelenium/articles/basics.html) Vignette.
