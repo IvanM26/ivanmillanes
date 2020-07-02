@@ -2,7 +2,7 @@
 title: Creating a Movie Dataset with R
 author: Ivan Millanes
 date: '2020-05-27'
-slug: movie-dataset-with-r
+slug: 2020-05-27-movie-dataset-with-r
 categories: []
 tags:
   - R
@@ -11,7 +11,7 @@ tags:
   - rvest
   - parallel
 subtitle: ''
-summary: "In this post, I'll show how I used R to create a movies dataset. I worked with IMDb (Internet Movie Database) data files available for download and information gathered through web scraping their site."
+summary: "In this post I work with IMDb (Internet Movie Database) data files available for download and information gathered through web scraping their site to create a movies dataset."
 authors: []
 lastmod: '2020-05-27T09:16:31-03:00'
 featured: no

@@ -3,6 +3,6 @@
 .RData
 .Ruserdata
 public/
-content/post/web-scrapping-imdb-with-r/data/
-content/post/web-scrapping-imdb-with-r/datasets/
-blogdown/post/web-scrapping-imdb-with-r/index_cache/html
+content/post/2020-05-27-movie-dataset-with-r/data/
+content/post/2020-05-27-movie-dataset-with-r/datasets/
+blogdown/post/2020-05-27-movie-dataset-with-r/index_cache/html
