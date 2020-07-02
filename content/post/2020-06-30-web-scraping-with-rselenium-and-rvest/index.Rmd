@@ -50,7 +50,7 @@ The following definitions where taken from https://www.pcmag.com/.
 
 - [Dynamic Web Page](https://www.pcmag.com/encyclopedia/term/dynamic-web-page): A Web page that provides custom content for the user based on the results of a search or some other request. Also known as "dynamic HTML" or "dynamic content", the "dynamic" term is used when referring to interactive Web pages created for each user.
 
-`rvest` is a great tool to scrape data from static web pages (check out [Creating a Movies Dataset](https://ivanmillanes.netlify.app/post/movie-dataset-with-r/) to see an example!).
+`rvest` is a great tool to scrape data from static web pages (check out [Creating a Movies Dataset](https://ivanmillanes.netlify.app/post/2020-05-27-movie-dataset-with-r/) to see an example!).
 
 But when it comes to dynamic web pages, `rvest` alone can't get the job done. This is when `RSelenium` joins the party...
 
