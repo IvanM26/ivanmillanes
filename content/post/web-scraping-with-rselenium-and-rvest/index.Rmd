@@ -34,6 +34,7 @@ In this post I'll talk about the `RSelenium` package as a tool to navigate websi
 # Static vs Dynamic Web Pages
 
 Let's compare the following websites:
+
 - [IMDb (Internet Movie Database)](https://www.imdb.com/) 
 - [Premier League Stats](https://www.premierleague.com/stats/top/players/goals)
 
