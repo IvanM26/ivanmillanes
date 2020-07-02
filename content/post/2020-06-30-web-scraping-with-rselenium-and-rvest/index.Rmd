@@ -728,3 +728,8 @@ The following list contains different videos, posts and StackOverflow posts that
 
 - [Data Scraping in R](https://stackoverflow.com/questions/50310595/data-scraping-in-r). Thanks to this post I found the [Premier League Stats](https://www.premierleague.com/stats/top/players/goals) website, which was exactly what I was looking for to write a post about `RSelenium`. Also, I took some hints from the answer marked as best.
 
+- CSS Tutorials:
+
+    - [CSS Selectors](https://www.w3schools.com/css/css_selectors.asp)
+    - [CSS Combinators](https://www.w3schools.com/css/css_combinators.asp)
+    - [CSS Attribute Selectors](https://www.w3schools.com/css/css_attribute_selectors.asp)
