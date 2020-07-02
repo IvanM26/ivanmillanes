@@ -21,14 +21,30 @@ image:
   focal_point: ''
   preview_only: no
 projects: []
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 1
 ---
 
 
+<div id="TOC">
+<ul>
+<li><a href="#static-vs-dynamic-web-pages">Static vs Dynamic Web Pages</a></li>
+<li><a href="#load-packages">Load Packages</a></li>
+<li><a href="#start-selenium">Start Selenium</a></li>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#example-webscraping-premier-league-player-stats">Example: Webscraping Premier League Player Stats</a></li>
+<li><a href="#parallel-framework">parallel Framework</a></li>
+<li><a href="#miscellaneous">Miscellaneous</a></li>
+<li><a href="#resources">Resources</a></li>
+</ul>
+</div>
 
-<div id="key-concepts" class="section level1">
-<h1>Key concepts</h1>
-<div id="static-vs-dynamic-web-pages" class="section level2">
-<h2>Static vs Dynamic Web Pages</h2>
+<p>In this post I’ll talk about the <code>RSelenium</code> package as a tool to navigate websites and how it can be combined with the <code>rvest</code> package to scrape dynamic web pages. To understand this post, you’ll need basic knowledge of <code>rvest</code>, HTML and CSS.</p>
+<p><strong>Observation</strong>: Even if you are not familiar with them, I explained as much as possible everything I did. For that reason, those who know about this stuff might find some parts of the post redundant. Feel free to read what you need and skip what you aldeady know!</p>
+<div id="static-vs-dynamic-web-pages" class="section level1">
+<h1>Static vs Dynamic Web Pages</h1>
 <p>Let’s compare the following websites:
 - <a href="https://www.imdb.com/">IMDb (Internet Movie Database)</a>
 - <a href="https://www.premierleague.com/stats/top/players/goals">Premier League Stats</a></p>
@@ -40,7 +56,8 @@ projects: []
 <li><p><a href="https://www.pcmag.com/encyclopedia/term/static-web-page">Static Web Page</a>: A Web page (HTML page) that contains the same information for all users. Although it may be periodically updated from time to time, it does not change with each user retrieval.</p></li>
 <li><p><a href="https://www.pcmag.com/encyclopedia/term/dynamic-web-page">Dynamic Web Page</a>: A Web page that provides custom content for the user based on the results of a search or some other request. Also known as “dynamic HTML” or “dynamic content”, the “dynamic” term is used when referring to interactive Web pages created for each user.</p></li>
 </ul>
-</div>
+<p><code>rvest</code> is a great tool to scrape data from static web pages (check out <a href="https://ivanmillanes.netlify.app/post/movie-dataset-with-r/">Creating a Movies Dataset</a> to see an example!).</p>
+<p>But when it comes to dynamic web pages, <code>rvest</code> alone can’t get the job done. This is when <code>RSelenium</code> joins the party…</p>
 </div>
 <div id="load-packages" class="section level1">
 <h1>Load Packages</h1>
@@ -74,7 +91,7 @@ rD &lt;- RSelenium::rsDriver(
 # Assign the client to an object
 remDr &lt;- rD[[&quot;client&quot;]]</code></pre>
 <p>After you run <code>rD &lt;- RSelenium::rsDriver(...)</code>, if everything worked correctly, a new chrome window will open. This window should look like this:</p>
-<p><img src="/img/rselenium-rvest/01.PNG" style="width:100.0%;height:100.0%" /></p>
+<p><img src="/img/rselenium-rvest/01.png" style="width:100.0%;height:100.0%" /></p>
 <p>You can find more information about <code>rsDriver()</code> in the <a href="https://docs.ropensci.org/RSelenium/articles/basics.html#rsdriver-1">Basics Vignette</a>.</p>
 </div>
 <div id="basic-usage" class="section level1">
@@ -179,7 +196,7 @@ webElem$getElementLocation()</code></pre>
 <p>In this example, I’ll scrape data from <a href="https://www.premierleague.com/stats/top/players/goals">Premier League Player Stats</a>. This is what the website looks like:</p>
 <p><img src="/img/rselenium-rvest/02.PNG" /></p>
 <p>You will notice that when you modify the <strong>Filters</strong>, the URL does not change. So you can’t use <code>rvest</code> alone to dynamically scrape this website. Also, if you scroll down to the end of the table you’ll see that there are pagination buttons. If you click them, you get more data, but again, the URL does not change. Here you can see how those pagination buttons look like:</p>
-<p><img src="/img/rselenium-rvest/03.PNG" /></p>
+<p><img src="/img/rselenium-rvest/03.png" /></p>
 <p><strong>Observation</strong>: Even though choosing a different stat <em>does</em> change the URL, I’ll work as if it didn’t.</p>
 <div id="target-dataset" class="section level2">
 <h2>Target Dataset</h2>
@@ -256,16 +273,16 @@ uppercased, when we check the dropdown list we see exactly that (for example, we
 <div id="stats" class="section level3">
 <h3>Stats</h3>
 <p>This is my view when I open the stats dropdown list and right click and inspect the Clean Sheets stat.</p>
-<p><img src="/img/rselenium-rvest/04.PNG" /></p>
+<p><img src="/img/rselenium-rvest/04.png" /></p>
 <p>Taking a closer look to the source where that element is present we get:</p>
-<p><img src="/img/rselenium-rvest/05.PNG" /></p>
+<p><img src="/img/rselenium-rvest/05.png" /></p>
 </div>
 <div id="seasons" class="section level3">
 <h3>Seasons</h3>
 <p>This is my view when I open the seasons dropdown list and right click and inspect the 2016/17 season.</p>
-<p><img src="/img/rselenium-rvest/06.PNG" /></p>
+<p><img src="/img/rselenium-rvest/06.png" /></p>
 <p>Taking a closer look to the source where that element is present we get:</p>
-<p><img src="/img/rselenium-rvest/07.PNG" /></p>
+<p><img src="/img/rselenium-rvest/07.png" /></p>
 <p>As you can see, we have an attribute named <code>data-dropdown-list</code> whose value is <code>FOOTBALL_COMPSEASON</code> and inside we have <code>li</code> tags where the attribute <code>data-option-name</code> changes for each season. This will be useful when defining how to iterate using <code>RSelenium</code>.</p>
 </div>
 <div id="positions" class="section level3">
@@ -781,7 +798,7 @@ clusterApply(clust, ports, function(x){
 pgs &lt;- list(&quot;https://www.google.com&quot;,
             &quot;https://www.nytimes.com&quot;,
             &quot;https://www.ft.com&quot;)</code></pre>
-<p>Use <code>parLapply()</code> to work in parallel. When you run this, you will see that one website was accessed by one browser, and one is still blank. This is a simple example, I haven’t defined any scraping, but of course you can!</p>
+<p>Use <code>parLapply()</code> to work in parallel. When you run this, you will see that each browser opens one website, and one is still blank. This is a simple example, I haven’t defined any scraping, but of course you can!</p>
 <pre class="r"><code># Define iteration
 parLapply(clust, pgs, function(x) {
   remDr$navigate(x)
@@ -794,8 +811,10 @@ close_rselenium()
 stopCluster(clust)</code></pre>
 <p><strong>Observation</strong>: Sometimes, when working in parallel some of the browsers close for no apparent reason (or at least a reason that I don’t understand).</p>
 </div>
-<div id="comments" class="section level1">
-<h1>Comments</h1>
+<div id="miscellaneous" class="section level1">
+<h1>Miscellaneous</h1>
+<div id="workaround-browser-closing-for-no-reason" class="section level2">
+<h2>Workaround browser closing for no reason</h2>
 <p>Consider the following scenario: your loop navigates to a certain website, clicks some elements and then gets the page source to scrape using <code>rvest</code>. If in the middle of that loop the browser closes, you will get an error (for example, it won’t navigate to the website, or the element won’t be found). You can work around these errors using <code>tryCatch()</code>, but when you skip the iteration where the error occurred, when you try to navigate to the website in the following iteration, an error would occur again (because there is no browser open!).</p>
 <p>You could, for example, use <code>remDr$open()</code> in the beggining of the loop, and <code>remDr$close()</code> in the end, but I think that will open and close many browsers and make the process slower.</p>
 <p>So I created this function that handles part of the problem (even though the iteration where the browser closed will not finish, the next one will and the process won’t stop).</p>
@@ -805,11 +824,38 @@ stopCluster(clust)</code></pre>
   if (&quot;try-error&quot; %in% class(check)) remDr$open(silent = TRUE)
 }</code></pre>
 </div>
+<div id="closing-selenium" class="section level2">
+<h2>Closing Selenium</h2>
+<p>Sometimes, even if the browser window is closed, when you re-run <code>rD &lt;- RSelenium::rsDriver(...)</code> you might encounter an error like:</p>
+<pre><code>Error in wdman::selenium(port = port, verbose = verbose, version = version,  :
+                          Selenium server signals port = 4567 is already in use.</code></pre>
+<p>This means that the connection was not completely closed. You can execute the lines of code below to stop Selenium.</p>
+<pre class="r"><code>remDr$close()
+rD$server$stop()
+system(&quot;taskkill /im java.exe /f&quot;, intern=FALSE, ignore.stdout=FALSE)</code></pre>
+<p>You can check <a href="https://stackoverflow.com/questions/43991498/rselenium-server-signals-port-is-already-in-use">this</a>. StackOverflow post for more information.</p>
+</div>
+<div id="wrapper-functions" class="section level2">
+<h2>Wrapper Functions</h2>
+<p>You can create functions in order to type less. Suppose that you navigate to a certain website where you have to click one link that sends you to a site with different tabs. You can use something like this:</p>
+<pre class="r"><code>navigate_page &lt;- function(CSS_ID, CSS_TAB = NULL){
+  remDr$navigate(&quot;WEBSITE&quot;)
+  webElem &lt;- remDr$findElement(using = &quot;css selector&quot;, CSS_ID)
+  webElem$clickElement()
+  if (!is.null(TAB)){
+    tab &lt;- remDr$findElement(using = &quot;css selector&quot;, CSS_TAB)
+    tab$clickElement()
+  }
+}</code></pre>
+<p><strong>Observation</strong>: this function is theoretical, it won’t work if you run it.</p>
+<p>I won’t show it here, but you can create functions to find elements, check if an element exists on the <a href="https://en.wikipedia.org/wiki/Document_Object_Model">DOM</a> (Document Object Model), try to click an element if it exists, parse the data table you are interested in, etc. You can check <a href="https://stackoverflow.com/questions/50310595/data-scraping-in-r">this</a> StackOverflow for examples.</p>
+</div>
+</div>
 <div id="resources" class="section level1">
 <h1>Resources</h1>
 <p>The following list contains different videos, posts and StackOverflow posts that I found useful when learning and working with RSelenium.</p>
 <ul>
-<li><p><strong>The ultimate online collection toolbox: Combining RSelenium and Rvest</strong> ( <a href="https://www.youtube.com/watch?v=OxbvFiYxEzI&amp;t">Part I</a> and <a href="https://www.youtube.com/watch?v=JcIeWiljQG4">Part II</a> ). If you know about <code>rvest</code> and just want to learn about <code>RSelenium</code>, I’d recommend watching Part II. It gives an overview of what you can do when combining <code>RSelenium</code> and <code>rvest</code>. It has nice an practical examples. As a final comment regarding these videos, I would’t pay too much attention to setting up Docker because at least I didn’t need to work that way in order to get <code>RSelenium</code> going. In fact, at least now, getting it going is pretty straightforward.</p></li>
+<li><p><strong>The ultimate online collection toolbox: Combining RSelenium and Rvest</strong> ( <a href="https://www.youtube.com/watch?v=OxbvFiYxEzI&amp;t">Part I</a> and <a href="https://www.youtube.com/watch?v=JcIeWiljQG4">Part II</a> ). If you know about <code>rvest</code> and just want to learn about <code>RSelenium</code>, I’d recommend watching Part II. It gives an overview of what you can do when combining <code>RSelenium</code> and <code>rvest</code>. It has nice an practical examples. As a final comment regarding these videos, I wouldn’t pay too much attention to setting up Docker because at least I didn’t need to work that way in order to get <code>RSelenium</code> going. In fact, at least now, getting it going is pretty straightforward.</p></li>
 <li><p><a href="http://thatdatatho.com/2019/01/22/tutorial-web-scraping-rselenium/">RSelenium Tutorial: A Tutorial to Basic Web Scraping With RSelenium</a>. I found this post really useful when trying to set up <code>RSelenium</code>. The solution given in <a href="https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7/56173984#56173984">this</a> StackOverflow post, which is mentioned in the article, seems to be enough.</p></li>
 <li><p><a href="http://joshuamccrain.com/tutorials/web_scraping_R_selenium.html">RSelenium Tutorial</a>. This post might be helpful too.</p></li>
 <li><p><a href="https://docs.ropensci.org/RSelenium/">RSelenium Package Website</a>. It has more advanced and detailed content. I just took a look to the <a href="https://docs.ropensci.org/RSelenium/articles/basics.html">Basics</a> Vignette.</p></li>
@@ -819,6 +865,6 @@ stopCluster(clust)</code></pre>
 <li><a href="https://stackoverflow.com/questions/26963927/dropdown-boxes-in-rselenium">dropdown boxes in RSelenium</a></li>
 </ul></li>
 <li><p><a href="https://stackoverflow.com/questions/43991498/rselenium-server-signals-port-is-already-in-use">RSelenium: server signals port is already in use</a>. This post gives a solution to the “port already in use” problem. Even though is not marked as best, the last line of code of the second answer is useful.</p></li>
-<li><p><a href="https://stackoverflow.com/questions/50310595/data-scraping-in-r">Data Scraping in R</a>. Thanks to this post I found the <a href="https://www.premierleague.com/stats/top/players/goals">Premier League Stats</a> website, which was exactly was I was looking for to write a post about <code>RSelenium</code>. Also, I took some hints from the answer marked as best.</p></li>
+<li><p><a href="https://stackoverflow.com/questions/50310595/data-scraping-in-r">Data Scraping in R</a>. Thanks to this post I found the <a href="https://www.premierleague.com/stats/top/players/goals">Premier League Stats</a> website, which was exactly what I was looking for to write a post about <code>RSelenium</code>. Also, I took some hints from the answer marked as best.</p></li>
 </ul>
 </div>

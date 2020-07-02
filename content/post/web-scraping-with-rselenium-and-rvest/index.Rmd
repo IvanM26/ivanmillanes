@@ -21,11 +21,17 @@ image:
   focal_point: ''
   preview_only: no
 projects: []
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 1
 ---
 
-# Key concepts
+In this post I'll talk about the `RSelenium` package as a tool to navigate websites and how it can be combined with the `rvest` package to scrape dynamic web pages. To understand this post, you'll need basic knowledge of `rvest`, HTML and CSS. 
 
-## Static vs Dynamic Web Pages
+**Observation**: Even if you are not familiar with them, I explained as much as possible everything I did. For that reason, those who know about this stuff might find some parts of the post redundant. Feel free to read what you need and skip what you aldeady know!
+
+# Static vs Dynamic Web Pages
 
 Let's compare the following websites:
 - [IMDb (Internet Movie Database)](https://www.imdb.com/) 
@@ -43,6 +49,9 @@ The following definitions where taken from https://www.pcmag.com/.
 
 - [Dynamic Web Page](https://www.pcmag.com/encyclopedia/term/dynamic-web-page): A Web page that provides custom content for the user based on the results of a search or some other request. Also known as "dynamic HTML" or "dynamic content", the "dynamic" term is used when referring to interactive Web pages created for each user.
 
+`rvest` is a great tool to scrape data from static web pages (check out [Creating a Movies Dataset](https://ivanmillanes.netlify.app/post/movie-dataset-with-r/) to see an example!).
+
+But when it comes to dynamic web pages, `rvest` alone can't get the job done. This is when `RSelenium` joins the party...
 
 # Load Packages
 
@@ -84,7 +93,7 @@ remDr <- rD[["client"]]
 
 After you run `rD <- RSelenium::rsDriver(...)`, if everything worked correctly, a new chrome window will open. This window should look like this:
 
-![](/img/rselenium-rvest/01.PNG){width=100% height=100%}
+![](/img/rselenium-rvest/01.png){width=100% height=100%}
 
 You can find more information about `rsDriver()` in the [Basics Vignette](https://docs.ropensci.org/RSelenium/articles/basics.html#rsdriver-1).
 
@@ -214,7 +223,7 @@ In this example, I'll scrape data from [Premier League Player Stats](https://www
 
 You will notice that when you modify the **Filters**, the URL does not change. So you can't use `rvest` alone to dynamically scrape this website. Also, if you scroll down to the end of the table you'll see that there are pagination buttons. If you click them, you get more data, but again, the URL does not change. Here you can see how those pagination buttons look like:
 
-![](/img/rselenium-rvest/03.PNG)
+![](/img/rselenium-rvest/03.png)
 
 **Observation**: Even though choosing a different stat *does* change the URL, I'll work as if it didn't.
 
@@ -305,21 +314,21 @@ uppercased, when we check the dropdown list we see exactly that (for example, we
 
 This is my view when I open the stats dropdown list and right click and inspect the Clean Sheets stat.
 
-![](/img/rselenium-rvest/04.PNG)
+![](/img/rselenium-rvest/04.png)
 
 Taking a closer look to the source where that element is present we get:
 
-![](/img/rselenium-rvest/05.PNG)
+![](/img/rselenium-rvest/05.png)
 
 ### Seasons
 
 This is my view when I open the seasons dropdown list and right click and inspect the 2016/17 season.
 
-![](/img/rselenium-rvest/06.PNG)
+![](/img/rselenium-rvest/06.png)
 
 Taking a closer look to the source where that element is present we get:
 
-![](/img/rselenium-rvest/07.PNG)
+![](/img/rselenium-rvest/07.png)
 
 As you can see, we have an attribute named `data-dropdown-list` whose value is `FOOTBALL_COMPSEASON` and inside we have `li` tags where the attribute `data-option-name` changes for each season. This will be useful when defining how to iterate using `RSelenium`.
 
@@ -618,7 +627,7 @@ pgs <- list("https://www.google.com",
             "https://www.ft.com")
 ```
 
-Use `parLapply()` to work in parallel. When you run this, you will see that one website was accessed by one browser, and one is still blank. This is a simple example, I haven't defined any scraping, but of course you can!
+Use `parLapply()` to work in parallel. When you run this, you will see that each browser opens one website, and one is still blank. This is a simple example, I haven't defined any scraping, but of course you can!
 
 ```{r, eval=FALSE}
 # Define iteration
@@ -639,7 +648,8 @@ stopCluster(clust)
 
 **Observation**: Sometimes, when working in parallel some of the browsers close for no apparent reason (or at least a reason that I don't understand).
 
-# Comments
+# Miscellaneous
+## Workaround browser closing for no reason
 
 Consider the following scenario: your loop navigates to a certain website, clicks some elements and then gets the page source to scrape using `rvest`. If in the middle of that loop the browser closes, you will get an error (for example, it won't navigate to the website, or the element won't be found). You can work around these errors using `tryCatch()`, but when you skip the iteration where the error occurred, when you try to navigate to the website in the following iteration, an error would occur again (because there is no browser open!).
 
@@ -656,11 +666,49 @@ check_chrome <- function(){
 }
 ```
 
+## Closing Selenium
+
+Sometimes, even if the browser window is closed, when you re-run `rD <- RSelenium::rsDriver(...)` you might encounter an error like:
+
+```
+Error in wdman::selenium(port = port, verbose = verbose, version = version,  :
+                          Selenium server signals port = 4567 is already in use.
+```
+This means that the connection was not completely closed. You can execute the lines of code below to stop Selenium.
+
+```{r, eval=FALSE}
+remDr$close()
+rD$server$stop()
+system("taskkill /im java.exe /f", intern=FALSE, ignore.stdout=FALSE)
+```
+
+You can check [this](https://stackoverflow.com/questions/43991498/rselenium-server-signals-port-is-already-in-use). StackOverflow post for more information.
+
+## Wrapper Functions
+
+You can create functions in order to type less. Suppose that you navigate to a certain website where you have to click one link that sends you to a site with different tabs. You can use something like this:
+
+```{r}
+navigate_page <- function(CSS_ID, CSS_TAB = NULL){
+  remDr$navigate("WEBSITE")
+  webElem <- remDr$findElement(using = "css selector", CSS_ID)
+  webElem$clickElement()
+  if (!is.null(TAB)){
+    tab <- remDr$findElement(using = "css selector", CSS_TAB)
+    tab$clickElement()
+  }
+}
+```
+
+**Observation**: this function is theoretical, it won't work if you run it.
+
+I won't show it here, but you can create functions to find elements, check if an element exists on the [DOM](https://en.wikipedia.org/wiki/Document_Object_Model) (Document Object Model), try to click an element if it exists, parse the data table you are interested in, etc. You can check [this](https://stackoverflow.com/questions/50310595/data-scraping-in-r) StackOverflow for examples.
+
 # Resources
 
 The following list contains different videos, posts and StackOverflow posts that I found useful when learning and working with RSelenium.
 
-- **The ultimate online collection toolbox: Combining RSelenium and Rvest** ( [Part I](https://www.youtube.com/watch?v=OxbvFiYxEzI&t)  and [Part II](https://www.youtube.com/watch?v=JcIeWiljQG4) ). If you know about `rvest` and just want to learn about `RSelenium`, I'd recommend watching Part II. It gives an overview of what you can do when combining `RSelenium` and `rvest`. It has nice an practical examples. As a final comment regarding these videos, I would't pay too much attention to setting up Docker because at least I didn't need to work that way in order to get `RSelenium` going. In fact, at least now, getting it going is pretty straightforward.
+- **The ultimate online collection toolbox: Combining RSelenium and Rvest** ( [Part I](https://www.youtube.com/watch?v=OxbvFiYxEzI&t)  and [Part II](https://www.youtube.com/watch?v=JcIeWiljQG4) ). If you know about `rvest` and just want to learn about `RSelenium`, I'd recommend watching Part II. It gives an overview of what you can do when combining `RSelenium` and `rvest`. It has nice an practical examples. As a final comment regarding these videos, I wouldn't pay too much attention to setting up Docker because at least I didn't need to work that way in order to get `RSelenium` going. In fact, at least now, getting it going is pretty straightforward.
 
 - [RSelenium Tutorial: A Tutorial to Basic Web Scraping With RSelenium](http://thatdatatho.com/2019/01/22/tutorial-web-scraping-rselenium/). I found this post really useful when trying to set up `RSelenium`. The solution given in [this](https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7/56173984#56173984) StackOverflow post, which is mentioned in the article, seems to be enough.
 
@@ -675,5 +723,5 @@ The following list contains different videos, posts and StackOverflow posts that
 
 - [RSelenium: server signals port is already in use](https://stackoverflow.com/questions/43991498/rselenium-server-signals-port-is-already-in-use). This post gives a solution to the "port already in use" problem. Even though is not marked as best, the last line of code of the second answer is useful.
 
-- [Data Scraping in R](https://stackoverflow.com/questions/50310595/data-scraping-in-r). Thanks to this post I found the [Premier League Stats](https://www.premierleague.com/stats/top/players/goals) website, which was exactly was I was looking for to write a post about `RSelenium`. Also, I took some hints from the answer marked as best.
+- [Data Scraping in R](https://stackoverflow.com/questions/50310595/data-scraping-in-r). Thanks to this post I found the [Premier League Stats](https://www.premierleague.com/stats/top/players/goals) website, which was exactly what I was looking for to write a post about `RSelenium`. Also, I took some hints from the answer marked as best.
 
