@@ -41,7 +41,7 @@ output:
 </ul>
 </div>
 
-<p>In this post I’ll talk about the <code>RSelenium</code> package as a tool to navigate websites and how it can be combined with the <code>rvest</code> package to scrape dynamic web pages. To understand this post, you’ll need basic knowledge of <code>rvest</code>, HTML and CSS.</p>
+<p>In this post I’ll talk about the <code>RSelenium</code> package as a tool to navigate websites and how it can be combined with the <code>rvest</code> package to scrape dynamic web pages. To understand this post, you’ll need basic knowledge of <code>rvest</code>, HTML and CSS. You can download the full R script <a href="script/rselenium_rvest.R">HERE</a>!</p>
 <p><strong>Observation</strong>: Even if you are not familiar with them, I explained as much as possible everything I did. For that reason, those who know about this stuff might find some parts of the post redundant. Feel free to read what you need and skip what you aldeady know!</p>
 <div id="static-vs-dynamic-web-pages" class="section level1">
 <h1>Static vs Dynamic Web Pages</h1>
@@ -242,7 +242,7 @@ acceptCookies$clickElement()</code></pre>
 <h2>Getting Values to Iterate Over</h2>
 <p>I know that in order to get the data, I’ll have to iterate over different lists of values. In particular, I need a list of stats, seasons, and player positions.</p>
 <p>We can use <code>rvest</code> to scrape the website and get these lists. To do so, we need to find the corresponding nodes. As an example, after the code I’ll show where I searched for the required information in the page source for the stats and seasons lists.</p>
-<p>The code below uses <code>rvest</code>to create the lists we’ll use in the loops.</p>
+<p>The code below uses <code>rvest</code> to create the lists we’ll use in the loops.</p>
 <pre class="r"><code># Read page source
 source &lt;- remDr$getPageSource()[[1]]
 

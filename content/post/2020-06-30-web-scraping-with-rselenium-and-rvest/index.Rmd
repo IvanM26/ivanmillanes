@@ -27,7 +27,7 @@ output:
     toc_depth: 1
 ---
 
-In this post I'll talk about the `RSelenium` package as a tool to navigate websites and how it can be combined with the `rvest` package to scrape dynamic web pages. To understand this post, you'll need basic knowledge of `rvest`, HTML and CSS. 
+In this post I'll talk about the `RSelenium` package as a tool to navigate websites and how it can be combined with the `rvest` package to scrape dynamic web pages. To understand this post, you'll need basic knowledge of `rvest`, HTML and CSS. You can download the full R script [HERE](script/rselenium_rvest.R)!
 
 **Observation**: Even if you are not familiar with them, I explained as much as possible everything I did. For that reason, those who know about this stuff might find some parts of the post redundant. Feel free to read what you need and skip what you aldeady know!
 
@@ -276,7 +276,7 @@ I know that in order to get the data, I'll have to iterate over different lists 
 
 We can use `rvest` to scrape the website and get these lists. To do so, we need to find the corresponding nodes. As an example, after the code I'll show where I searched for the required information in the page source for the stats and seasons lists.
 
-The code below uses `rvest`to create the lists we'll use in the loops.
+The code below uses `rvest` to create the lists we'll use in the loops.
 
 ```{r, eval=FALSE}
 # Read page source
