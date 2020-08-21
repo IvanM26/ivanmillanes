@@ -54,7 +54,16 @@ The following definitions where taken from https://www.pcmag.com/.
 
 But when it comes to dynamic web pages, `rvest` alone can't get the job done. This is when `RSelenium` joins the party...
 
-# Load Packages
+# Prerequisites
+
+## Java
+You need to have Java installed. You can use Windows' **Command Prompt** to check this. Just type *java -version* and press Enter. You should see something that looks like this:
+
+![](/img/rselenium-rvest/08.png){width=100% height=100%}
+
+If it throws an error, it might mean that you don't have Java installed. You can download it from [HERE](https://java.com/en/download/).
+
+## R Packages
 
 The following packages need to be installed and loaded in order to run the code written in this post.
 
@@ -66,26 +75,46 @@ library(RSelenium)
 
 # Start Selenium {#start-selenium}
 
-Starting a Selenium server and browser is pretty straightforward using [`rsDriver()`](https://www.rdocumentation.org/packages/RSelenium/versions/1.7.7/topics/rsDriver). The parameter `chromever` defined this way always uses the latest compatible ChromeDriver version (the code was extracted from [this](https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7/56173984#56173984) StackOverflow post).
+Starting a Selenium server and browser is pretty straightforward using [`rsDriver()`](https://www.rdocumentation.org/packages/RSelenium/versions/1.7.7/topics/rsDriver).
+
+```{r, eval=FALSE}
+rD <- RSelenium::rsDriver()
+```
+
+However, when you run the code above it may produce the following error:
+
+```
+Selenium message:session not created: This version of ChromeDriver only supports Chrome version 85
+
+...
+```
+This error is addressed in [this](https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7) StackOverflow post. Basically, it means that there is a mismatch between the *ChromeDriver* and the *Chrome Browser* versions. As mentioned in the post, each version of *ChromeDriver* supports Chrome with matching major, minor, and build version numbers. For example, *ChromeDriver* 73.0.3683.20 supports all Chrome versions that start with 73.0.3683.
+
+The parameter `chromever` defined this way always uses the latest compatible *ChromeDriver* version (the code was edited from [this](https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7/56173984#56173984) StackOverflow post).
+
 
 ```{r, eval=FALSE}
 # Start Selenium server and browser
 rD <- RSelenium::rsDriver(
   browser = "chrome",
-  chromever = system2(
-    command = "wmic",
-    args = 'datafile where name="C:\\\\Program Files (x86)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe" get Version /value',
-    stdout = TRUE,
-    stderr = TRUE) %>%
+  chromever = 
+    # Get Chrome version
+    system2(
+      command = "wmic",
+      args = 'datafile where name="C:\\\\Program Files (x86)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe" get Version /value',
+      stdout = TRUE,
+      stderr = TRUE
+      ) %>%
+    # Wrangling
     stringr::str_extract(pattern = "(?<=Version=)\\d+\\.\\d+\\.\\d+\\.") %>%
     magrittr::extract(!is.na(.)) %>%
     stringr::str_replace_all(pattern = "\\.", replacement = "\\\\.") %>%
     paste0("^",  .) %>%
-    stringr::str_subset(string = binman::list_versions(appname = "chromedriver") %>%
-                          dplyr::last()) %>%
-    as.numeric_version() %>%
-    max() %>%
-    as.character()
+    # Match versions
+    stringr::str_subset(
+      # List chromedriver versions
+      string = binman::list_versions(appname = "chromedriver") %>% unlist()
+      )
   )
 
 # Assign the client to an object

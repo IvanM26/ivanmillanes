@@ -31,7 +31,7 @@ output:
 <div id="TOC">
 <ul>
 <li><a href="#static-vs-dynamic-web-pages">Static vs Dynamic Web Pages</a></li>
-<li><a href="#load-packages">Load Packages</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#start-selenium">Start Selenium</a></li>
 <li><a href="#basic-usage">Basic Usage</a></li>
 <li><a href="#example-webscraping-premier-league-player-stats">Example: Webscraping Premier League Player Stats</a></li>
@@ -61,33 +61,53 @@ output:
 <p><code>rvest</code> is a great tool to scrape data from static web pages (check out <a href="https://ivanmillanes.netlify.app/post/2020-05-27-movie-dataset-with-r/">Creating a Movies Dataset</a> to see an example!).</p>
 <p>But when it comes to dynamic web pages, <code>rvest</code> alone can’t get the job done. This is when <code>RSelenium</code> joins the party…</p>
 </div>
-<div id="load-packages" class="section level1">
-<h1>Load Packages</h1>
+<div id="prerequisites" class="section level1">
+<h1>Prerequisites</h1>
+<div id="java" class="section level2">
+<h2>Java</h2>
+<p>You need to have Java installed. You can use Windows’ <strong>Command Prompt</strong> to check this. Just type <em>java -version</em> and press Enter. You should see something that looks like this:</p>
+<p><img src="/img/rselenium-rvest/08.png" style="width:100.0%;height:100.0%" /></p>
+<p>If it throws an error, it might mean that you don’t have Java installed. You can download it from <a href="https://java.com/en/download/">HERE</a>.</p>
+</div>
+<div id="r-packages" class="section level2">
+<h2>R Packages</h2>
 <p>The following packages need to be installed and loaded in order to run the code written in this post.</p>
 <pre class="r"><code>library(tidyverse)
 library(rvest)
 library(RSelenium)</code></pre>
 </div>
+</div>
 <div id="start-selenium" class="section level1">
 <h1>Start Selenium</h1>
-<p>Starting a Selenium server and browser is pretty straightforward using <a href="https://www.rdocumentation.org/packages/RSelenium/versions/1.7.7/topics/rsDriver"><code>rsDriver()</code></a>. The parameter <code>chromever</code> defined this way always uses the latest compatible ChromeDriver version (the code was extracted from <a href="https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7/56173984#56173984">this</a> StackOverflow post).</p>
+<p>Starting a Selenium server and browser is pretty straightforward using <a href="https://www.rdocumentation.org/packages/RSelenium/versions/1.7.7/topics/rsDriver"><code>rsDriver()</code></a>.</p>
+<pre class="r"><code>rD &lt;- RSelenium::rsDriver()</code></pre>
+<p>However, when you run the code above it may produce the following error:</p>
+<pre><code>Selenium message:session not created: This version of ChromeDriver only supports Chrome version 85
+
+...</code></pre>
+<p>This error is addressed in <a href="https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7">this</a> StackOverflow post. Basically, it means that there is a mismatch between the <em>ChromeDriver</em> and the <em>Chrome Browser</em> versions. As mentioned in the post, each version of <em>ChromeDriver</em> supports Chrome with matching major, minor, and build version numbers. For example, <em>ChromeDriver</em> 73.0.3683.20 supports all Chrome versions that start with 73.0.3683.</p>
+<p>The parameter <code>chromever</code> defined this way always uses the latest compatible <em>ChromeDriver</em> version (the code was edited from <a href="https://stackoverflow.com/questions/55201226/session-not-created-this-version-of-chromedriver-only-supports-chrome-version-7/56173984#56173984">this</a> StackOverflow post).</p>
 <pre class="r"><code># Start Selenium server and browser
 rD &lt;- RSelenium::rsDriver(
   browser = &quot;chrome&quot;,
-  chromever = system2(
-    command = &quot;wmic&quot;,
-    args = &#39;datafile where name=&quot;C:\\\\Program Files (x86)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe&quot; get Version /value&#39;,
-    stdout = TRUE,
-    stderr = TRUE) %&gt;%
+  chromever = 
+    # Get Chrome version
+    system2(
+      command = &quot;wmic&quot;,
+      args = &#39;datafile where name=&quot;C:\\\\Program Files (x86)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe&quot; get Version /value&#39;,
+      stdout = TRUE,
+      stderr = TRUE
+      ) %&gt;%
+    # Wrangling
     stringr::str_extract(pattern = &quot;(?&lt;=Version=)\\d+\\.\\d+\\.\\d+\\.&quot;) %&gt;%
     magrittr::extract(!is.na(.)) %&gt;%
     stringr::str_replace_all(pattern = &quot;\\.&quot;, replacement = &quot;\\\\.&quot;) %&gt;%
     paste0(&quot;^&quot;,  .) %&gt;%
-    stringr::str_subset(string = binman::list_versions(appname = &quot;chromedriver&quot;) %&gt;%
-                          dplyr::last()) %&gt;%
-    as.numeric_version() %&gt;%
-    max() %&gt;%
-    as.character()
+    # Match versions
+    stringr::str_subset(
+      # List chromedriver versions
+      string = binman::list_versions(appname = &quot;chromedriver&quot;) %&gt;% unlist()
+      )
   )
 
 # Assign the client to an object
