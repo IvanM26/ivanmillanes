@@ -881,6 +881,16 @@ saveRDS(list_directors, "datasets/list_directors.rds")
 saveRDS(list_cast, "datasets/list_cast.rds")
 ```
 
+# Download Created Datasets
+
+You can download the created datasets. They are in `.rds` format.
+
+- [movies](datasets/movies.rds)
+- [list_genres](datasets/list_genres.rds)
+- [list_cast](datasets/list_cast.rds)
+- [list_directors](datasets/list_directors.rds)
+
+
 <div id="disqus_thread"></div>
 <script>
 
